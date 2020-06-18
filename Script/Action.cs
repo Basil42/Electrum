@@ -30,6 +30,8 @@ public class ActionInstance
     public Action Template;
     public Dictionary<Role, Character> InvolvedCharacters;//I was not sure wether I should use Charater or role as key, code will be faster and clearer this way I think, it will need to be refactored to allow multiple bindings to the same role.
     public float Affinity = 1.0f;
+    public float ExpectedImmediateUtility = 0.0f;
+    public float ExpectedTotalUtility = 0.0f;//based on the expected utility of future actions after that one.
     public ActionInstance(Action template, Dictionary<Role, Character> involvedCharacters)
     {
         Template = template;
@@ -44,39 +46,7 @@ public class ActionInstance
 
     
 
-    private float RecursiveEstimateBindingsAttractiveness(List<Character> characterOpenList, ref WorldModel worldmodel,int depth = 0, float instanceAttractiveness = 1.0f, float instanceLikelyhoodWeight = 1.0f)
-    {
-        var binding = Template.EngineControlledRoles[depth];
     
-        foreach(var character in characterOpenList)
-        {
-            var recursionInstance = new ActionInstance(this);
-            recursionInstance.InvolvedCharacters.Add(binding.role, character);
-            bool IsValidCandidate = true;
-            foreach(var condition in binding.conditions)
-            {
-                if (!condition.isMet(recursionInstance, ref worldmodel))
-                {
-                    IsValidCandidate = false;
-                    break;
-                }
-                
-            }
-            if (IsValidCandidate)
-            {
-                var recursionOpenList = new List<Character>(characterOpenList);
-                recursionOpenList.Remove(character);
-
-            }
-        }
-
-        if (binding.Mandatory)
-        {
-            return RecursiveEstimateBindingsAttractiveness(characterOpenList,ref worldmodel, depth + 1, instanceAttractiveness, instanceLikelyhoodWeight);
-        }
-            
-        throw new NotImplementedException();
-    }
 
 
 
@@ -114,6 +84,11 @@ public class ActionInstance
             }
         }
         return likelyhoodWeight;
+    }
+
+    internal void VirtualRun(ref WorldModel newModel)
+    {
+        throw new NotImplementedException();
     }
 }
 

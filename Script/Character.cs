@@ -24,8 +24,8 @@ public class Character : ScriptableObject
 
     public ActionInstance ChooseAction()
     {
-        var actionList = Electrum.actionSet.actions;
-        foreach(var action in actionList)
+        var finalActions = new List<ActionInstance>();
+        foreach(var action in Electrum.actionSet.actions)
         {
             float BaseAffinity = 1.0f;
             //evaluate the affinity score of this action, discard all potential instances if below affinity treshold (defined in the engine settings object)
@@ -45,14 +45,31 @@ public class Character : ScriptableObject
                 {
                     ActionCandidates.Remove(instance);//bindings are expected to be too bad to consider taking the action 
                 }
-                else i++;
+                else
+                {
+                    /*calculate expected utility of the actions, this were we can add recursion.
+                    * But as it is now, the engine already has more feature than Ensemble, so not a priority 
+                    * (Also I'd like to see how much garbage it currently generates)*/
+                    EstimateUtility(ActionCandidates[i]);
+                    i++;
+                }
             }
-            /*calculate expected utility of the actions, this were we can add recursion.
-             * But as it is now, the engine already has more feature than Ensemble, so not a priority 
-             * (Also I'd like to see how the GC does on depth 0 to see if we need to improve memory management)*/
+            finalActions.AddRange(ActionCandidates);
+            //here we might have the engine fit for narrative goals, we probably want to sort the actions first though;
 
         }
         throw new NotImplementedException();//REMEMBER TO REMOVE THIS AFTER THE FUNCTION IS DONE
+    }
+
+    private void EstimateUtility(ActionInstance actionInstance)
+    {
+        if (m_goals.Count == 0) return;//the character will simply rank action by affinity, should rarely happen, as some goals are probably universal, if not acetively sought
+        //run effect on the worldmodel
+        var newModel = worldModel.Copy();
+        actionInstance.VirtualRun(ref newModel);
+
+        throw new NotImplementedException();
+        
     }
 
     private float EstimateBindingsAttractiveness(ActionInstance instance)
