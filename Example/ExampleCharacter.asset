@@ -67,3 +67,89 @@ MonoBehaviour:
     - {fileID: 11400000}
     _values:
     - relationships: 00000000
+  m_goals: []
+  worldModel:
+    Characters:
+      reorderableList:
+        canAdd: 1
+        canRemove: 1
+        draggable: 1
+        expandable: 1
+        multipleSelection: 1
+        isExpanded: 0
+        label:
+          m_Text: Keys
+          m_Image: {fileID: 0}
+          m_Tooltip: 
+        headerHeight: 18
+        footerHeight: 13
+        slideEasing: 0.15
+        verticalSpacing: 2
+        showDefaultBackground: 1
+        elementDisplayType: 0
+        elementNameProperty: 
+        elementNameOverride: 
+        elementIcon: {fileID: 0}
+      reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60, type: 2}
+      isExpanded: 0
+      _keyValues:
+      - {fileID: 11400000}
+      _keys:
+      - {fileID: 11400000}
+      _values:
+      - Character: {fileID: 11400000}
+        trust: 0
+        traits:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 0
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 0
+          _keyValues: 01000000
+          _keys: 01000000
+          _values:
+          - 0
+        goals: []
+        Relationships:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 0
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 0
+          _keyValues: []
+          _keys: []
+          _values: []

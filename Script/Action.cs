@@ -86,8 +86,10 @@ public class ActionInstance
         return likelyhoodWeight;
     }
 
-    internal void VirtualRun(ref WorldModel newModel)
+    internal WorldModel VirtualRun(WorldModel Model)//this should be run during the Engine controlled bindings attractiveness evaluation, to avoid having to look for these bindings twice.
     {
+        var newModel = Model.Copy();
+        
         throw new NotImplementedException();
     }
 }
@@ -97,7 +99,7 @@ public class ActionInstance
 [Serializable]
 public class ActionEffect
 {
-    public Effect effect;
+    public List<Effect> effects;
     public List<Condition> conditions;//condition that must be met for the effect to be applied, allow for more nuance with smaller authoring overhead, condition is marked unmet if it refers to an unbound role
     public List<influenceRule> influenceRules;
 }

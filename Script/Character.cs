@@ -18,7 +18,7 @@ public class Character : ScriptableObject
     //trait values must be between 0f and 1f
     public TraitValueDictionary m_traits;
     public RelationShipDictionary m_relationships;
-    List<Goal> m_goals =new List<Goal>();
+    public List<Goal> m_goals =new List<Goal>();
     public WorldModel worldModel;
 
 
@@ -41,16 +41,13 @@ public class Character : ScriptableObject
             for (int i = 0; i < ActionCandidates.Count; )
             {
                 ActionInstance instance = ActionCandidates[i];
-                if (EstimateBindingsAttractiveness(instance) < Electrum.affinityTreshold)
+                if (!EstimateBindingsQuality(instance, worldModel))
                 {
                     ActionCandidates.Remove(instance);//bindings are expected to be too bad to consider taking the action 
                 }
                 else
                 {
-                    /*calculate expected utility of the actions, this were we can add recursion.
-                    * But as it is now, the engine already has more feature than Ensemble, so not a priority 
-                    * (Also I'd like to see how much garbage it currently generates)*/
-                    EstimateUtility(ActionCandidates[i]);
+                    
                     i++;
                 }
             }
@@ -61,20 +58,11 @@ public class Character : ScriptableObject
         throw new NotImplementedException();//REMEMBER TO REMOVE THIS AFTER THE FUNCTION IS DONE
     }
 
-    private void EstimateUtility(ActionInstance actionInstance)
-    {
-        if (m_goals.Count == 0) return;//the character will simply rank action by affinity, should rarely happen, as some goals are probably universal, if not acetively sought
-        //run effect on the worldmodel
-        var newModel = worldModel.Copy();
-        actionInstance.VirtualRun(ref newModel);
+    
 
-        throw new NotImplementedException();
-        
-    }
-
-    private float EstimateBindingsAttractiveness(ActionInstance instance)
+    private bool EstimateBindingsQuality(ActionInstance instance, WorldModel context)//calculate expected affinity from the instance, as well as expected utility, recursion would happen here to evaluate future actions
     {
-        var OpenCandidateList = new List<CharModel>(worldModel.Characters.Values);
+        var OpenCandidateList = new List<CharModel>(context.Characters.Values);
         for(int i =0;i< OpenCandidateList.Count;)
         {
             if (instance.InvolvedCharacters.ContainsValue(OpenCandidateList[i].Character)) OpenCandidateList.RemoveAt(i);
@@ -92,12 +80,44 @@ public class Character : ScriptableObject
             possibleBindingsinstances[i].RunEngineControlledPreferenceRules();
         }
         float Attractiveness = 1.0f;
+        List<float> BindingProbability = new List<float>();
         for(int i = 0;i < possibleBindingsinstances.Count; i++)
         {
-            Attractiveness *= Mathf.Pow(possibleBindingsinstances[i].Affinity, (likelyhoodWeights[i] / likelyhoodWeightCumulated));
+            BindingProbability.Add(likelyhoodWeights[i] / likelyhoodWeightCumulated);
+            Attractiveness *= Mathf.Pow(possibleBindingsinstances[i].Affinity, BindingProbability[i]);
         }
         instance.Affinity = Attractiveness;
-        return Attractiveness;
+        if(Attractiveness < Electrum.affinityTreshold)return false;//the action will be discarded, as it is too unattractive
+        //utility estimation
+        for(int i = 0; i < possibleBindingsinstances.Count; i++)
+        {
+            var newModel = possibleBindingsinstances[i].VirtualRun(context);
+            foreach(var goal in m_goals)
+            {
+                switch (goal.type)
+                {
+                    case InfoType.relationship://This implementation is temporary, for "simplicity" (I know), I'll implement a way to estimate the distance to a desired relationship later (probably using the prerequisite for such a relationship
+                        if(newModel.Characters[goal.Holder].Relationships.ContainsKey(goal.Recipient) == goal.BooleanValue)
+                        {
+                            possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
+                        }
+                        break;
+                    case InfoType.trait:
+                        float newValue = 0.0f;
+                        newModel.Characters[goal.Holder].traits.TryGetValue(goal.trait, out newValue);
+                        float oldValue = 0.0f;
+                        context.Characters[goal.Holder].traits.TryGetValue(goal.trait, out oldValue);
+                        throw new NotImplementedException();
+                        //euclidian distance
+                        break;
+                        
+                    default:
+                        Debug.LogError("unimplemented goal type : " + goal.type.ToString());
+                        break;
+                }
+            }
+        }
+        return true;
     }
     private List<ActionInstance> FindControlledBindings(Action action)//Looks for all valid bindings that are under the character control, Proably a major memory hog on some "domains" and also slow
     {
@@ -162,21 +182,27 @@ public class Character : ScriptableObject
         model.Relationships = m_relationships;
         model.traits = m_traits;
         model.trust = 1.0f;
-        worldModel.Characters.Add(this, model);
+        if (worldModel.Characters.ContainsKey(this)) worldModel.Characters[this] = model;
+        else worldModel.Characters.Add(this, model);
     }
 }
 
 
-
+[Serializable]
 public struct Goal
 {
-    /*NOTE: the logic of goals is still open to be changed with 0 refactoring, as I didn't impplement any logic around it yet
-    *Condition/influenceRules structure might be easier to author and be generally more flexible*/
+    /*I wanted to have a worldModel object to represent the target state of the goal, but world model can contain objects with goals in them, creating a serialization "loop" that Unity doesn't like.*/
 
-    //propriety of the worldmodel that the character tries to make true.
-    WorldModel target; //the fields of this world model will be compared to the character ones
-    int maxCost; //the cost the character is willing to pay to accomplish this goal, used to exclude sequence of action that are accomplishing the goal to the detriment of everything else.
-    int investement;//The cost value the character has already sunk in the pursuit of that goal.
+    public InfoType type;
+    public Character Holder;
+    [Tooltip("leave empty for traits")]
+    public Character Recipient;
+    [Tooltip("leave default for relationships")]
+    public float value;
+    [Tooltip("leave false if the goal is for a relationship NOT to exist")]
+    public bool BooleanValue;
+    public Trait trait;
+    public float Importance;//how important is the fullfillement of this goal for the character. when the progress towards a goal is converted into utility during action evaluation, the result is multiplied by the importance of the goal, ie progress on a highly important goal is more valuable and setback are more strongly avoided.
 
     //to let character reason on the goals of other character, ways of mesuring similarities between two goals are required
     
@@ -227,6 +253,7 @@ public class CharModel//model that the character have of each other
         return result;
     }
     //we could add estimation of the model the target character holds of this character
+    public CharModel() { }
 }
 [Serializable]
 public class RelationshipArray//this class only serve to go around a quirk of unity serialization interaction with the serialized dictionaries
