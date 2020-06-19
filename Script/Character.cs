@@ -181,13 +181,20 @@ public struct Goal
     //to let character reason on the goals of other character, ways of mesuring similarities between two goals are required
     
 }
-public readonly struct WorldModel
+[Serializable]
+public class CharModelDictionary : SerializableDictionaryBase<Character, CharModel> { }
+[Serializable]
+public class WorldModel
 {
     //public readonly List<CharModel> Characters;
-    public readonly Dictionary<Character,CharModel> Characters;
-    private WorldModel(Dictionary<Character,CharModel> characters)//this constructor will also copy every character model
+    public CharModelDictionary Characters;
+    private WorldModel(CharModelDictionary characters)//this constructor will also copy every character model
     {
-        Characters = new Dictionary<Character, CharModel>(characters);//this should work because charmodel is a value type
+        Characters = new CharModelDictionary();//this should work because charmodel is a value type
+        foreach(var character in characters.Keys)
+        {
+            Characters.Add(character, characters[character].copy());
+        }
     }
     //utility to navigate and log info about this list or get a specific collection of information
     public WorldModel Copy()
@@ -197,7 +204,8 @@ public readonly struct WorldModel
     }
     
 }
-public struct CharModel//model that the character have of each other
+[Serializable]
+public class CharModel//model that the character have of each other
 {
     public Character Character;
     public float trust;//how much the character holding the model trusts information coming from the associated character
@@ -205,6 +213,19 @@ public struct CharModel//model that the character have of each other
     
     public List<Goal> goals; // goals the character thinks the target has.
     public RelationShipDictionary Relationships;
+
+    internal CharModel copy()
+    {
+        var result = new CharModel();
+        result.Character = Character;
+        result.trust = trust;
+        result.traits = new TraitValueDictionary();
+        result.traits.CopyFrom(traits);
+        result.goals = new List<Goal>(goals);
+        result.Relationships = new RelationShipDictionary();
+        result.Relationships.CopyFrom(Relationships);
+        return result;
+    }
     //we could add estimation of the model the target character holds of this character
 }
 [Serializable]
