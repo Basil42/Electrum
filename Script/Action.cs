@@ -44,12 +44,6 @@ public class ActionInstance
         Affinity = original.Affinity;
     }
 
-    
-
-    
-
-
-
     /*Used to adjust the affinity of the instance based on the attractiveness of the bindings the Character has control over.*/
     internal void RunCharacterControlledPreferenceRules()
     {

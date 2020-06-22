@@ -107,10 +107,29 @@ public class Character : ScriptableObject
                         newModel.Characters[goal.Holder].traits.TryGetValue(goal.trait, out newValue);
                         float oldValue = 0.0f;
                         context.Characters[goal.Holder].traits.TryGetValue(goal.trait, out oldValue);
-                        throw new NotImplementedException();
-                        //euclidian distance
+                        var goalTarget = goal.value;
+                        switch (goal.Operator)
+                        {
+                            case ValueComparisonOperator.lessThan:
+                                if (newValue < goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
+                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (oldValue - newValue) * goal.Importance;
+                                break;
+                            case ValueComparisonOperator.MoreThan:
+                                if (newValue > goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
+                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (newValue - oldValue) * goal.Importance;
+                                break;
+                            case ValueComparisonOperator.Equals:
+                                if ((newValue - goal.Tolerance) < goal.value && (newValue + goal.Tolerance) > goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
+                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (Mathf.Abs(newValue - goal.value) - Mathf.Abs(oldValue - goal.value)) * goal.Importance;
+                                break;
+                            default:
+                                break;
+                        }
+
                         break;
-                        
+                    case InfoType.opinion:
+                        throw new NotImplementedException();//this one is going to require big refactoring of some of the data structure, and generally custom Inspectors to be usable, so it will wait for now.
+                        break;
                     default:
                         Debug.LogError("unimplemented goal type : " + goal.type.ToString());
                         break;
@@ -194,17 +213,20 @@ public struct Goal
     /*I wanted to have a worldModel object to represent the target state of the goal, but world model can contain objects with goals in them, creating a serialization "loop" that Unity doesn't like.*/
 
     public InfoType type;
+    public float Importance;//how important is the fullfillement of this goal for the character. when the progress towards a goal is converted into utility during action evaluation, the result is multiplied by the importance of the goal, ie progress on a highly important goal is more valuable and setback are more strongly avoided.
     public Character Holder;
     [Tooltip("leave empty for traits")]
     public Character Recipient;
     [Tooltip("leave default for relationships")]
     public float value;
+    public ValueComparisonOperator Operator;
+    [Tooltip("used for the equals operator")]
+    public float Tolerance;
     [Tooltip("leave false if the goal is for a relationship NOT to exist")]
     public bool BooleanValue;
     public Trait trait;
-    public float Importance;//how important is the fullfillement of this goal for the character. when the progress towards a goal is converted into utility during action evaluation, the result is multiplied by the importance of the goal, ie progress on a highly important goal is more valuable and setback are more strongly avoided.
-
-    //to let character reason on the goals of other character, ways of mesuring similarities between two goals are required
+    
+   
     
 }
 [Serializable]
@@ -233,12 +255,14 @@ public class WorldModel
 [Serializable]
 public class CharModel//model that the character have of each other
 {
+    /*These models are much simpler than what we initially intended (information source, and trustworthiness is not being tracked), but it will do for Ensemble level of performance*/
     public Character Character;
-    public float trust;//how much the character holding the model trusts information coming from the associated character
-    public TraitValueDictionary traits; //traits the character percieves/thinks the target character has, this is a simpler approach than what we intended and the character cannot hold contrarian opinions
+    public float trust;
+    public TraitValueDictionary traits;
     
-    public List<Goal> goals; // goals the character thinks the target has.
+    public List<Goal> goals;
     public RelationShipDictionary Relationships;
+    public WorldModel worldModel;//little afraid of infinite nested worldModel here, but it opens a whole category of goals.
 
     internal CharModel copy()
     {
@@ -252,7 +276,6 @@ public class CharModel//model that the character have of each other
         result.Relationships.CopyFrom(Relationships);
         return result;
     }
-    //we could add estimation of the model the target character holds of this character
     public CharModel() { }
 }
 [Serializable]
