@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using TMPro;
 using UnityEngine;
@@ -52,10 +53,25 @@ public class Character : ScriptableObject
                 }
             }
             finalActions.AddRange(ActionCandidates);
-            //here we might have the engine fit for narrative goals, we probably want to sort the actions first though;
-
         }
-        throw new NotImplementedException();//REMEMBER TO REMOVE THIS AFTER THE FUNCTION IS DONE
+        finalActions.Sort((x, y) => x.ExpectedImmediateUtility.CompareTo(y.ExpectedImmediateUtility));
+        foreach (var instance in finalActions)
+        {
+            string description = instance.Template.name + ": \n ";
+            foreach(var character in instance.InvolvedCharacters)
+            {
+                description += character.Value.name + " as " + character.Key.ToString() + "\n";
+            }
+            Debug.Log(description);
+        }
+        if (finalActions.Count == 0)
+        {
+            var doNothingCharacters = new Dictionary<Role, Character>();
+            doNothingCharacters.Add(Role.actor, this);
+            var doNothingAction = new ActionInstance(Electrum.DoNothingAction,doNothingCharacters );
+            return doNothingAction;
+        }
+        return finalActions[0];
     }
 
     
@@ -63,41 +79,53 @@ public class Character : ScriptableObject
     private bool EstimateBindingsQuality(ActionInstance instance, WorldModel context)//calculate expected affinity from the instance, as well as expected utility, recursion would happen here to evaluate future actions
     {
         var OpenCandidateList = new List<CharModel>(context.Characters.Values);
-        for(int i =0;i< OpenCandidateList.Count;)
+        for (int i = 0; i < OpenCandidateList.Count;)
         {
             if (instance.InvolvedCharacters.ContainsValue(OpenCandidateList[i].Character)) OpenCandidateList.RemoveAt(i);
             else i++;
         }
         instance.RunCharacterControlledPreferenceRules();
         var possibleBindingsinstances = RecursiveBindings(instance, OpenCandidateList, instance.Template.EngineControlledRoles);
-        
+        SetBindingsProbability(possibleBindingsinstances);
+
+        instance.Affinity = EvaluateBindingsAffinity(possibleBindingsinstances);
+        if (instance.Affinity < Electrum.affinityTreshold) return false;//the action will be discarded, as it is too unattractive
+                                                                        //utility estimation
+        instance.ExpectedImmediateUtility = EvaluateBindingsUtility(context, possibleBindingsinstances);
+        return true;
+    }
+
+    private void SetBindingsProbability(List<ActionInstance> possibleBindingsinstances)
+    {
         float likelyhoodWeightCumulated = 0.0f;
         var likelyhoodWeights = new List<float>();
-        for(int i =0; i < possibleBindingsinstances.Count; i++)
+        for (int i = 0; i < possibleBindingsinstances.Count; i++)
         {
             likelyhoodWeights.Add(possibleBindingsinstances[i].EvaluateLikelyhoodWeight());
             likelyhoodWeightCumulated += likelyhoodWeights[i];
             possibleBindingsinstances[i].RunEngineControlledPreferenceRules();
         }
-        float Attractiveness = 1.0f;
-        List<float> BindingProbability = new List<float>();
-        for(int i = 0;i < possibleBindingsinstances.Count; i++)
+
+        for (int i = 0; i < possibleBindingsinstances.Count; i++)
         {
-            BindingProbability.Add(likelyhoodWeights[i] / likelyhoodWeightCumulated);
-            Attractiveness *= Mathf.Pow(possibleBindingsinstances[i].Affinity, BindingProbability[i]);
+            possibleBindingsinstances[i].expectedProbability = (likelyhoodWeights[i] / likelyhoodWeightCumulated);
+
         }
-        instance.Affinity = Attractiveness;
-        if(Attractiveness < Electrum.affinityTreshold)return false;//the action will be discarded, as it is too unattractive
-        //utility estimation
-        for(int i = 0; i < possibleBindingsinstances.Count; i++)
+    }
+
+    private float EvaluateBindingsUtility(WorldModel context, List<ActionInstance> possibleBindingsinstances)
+    {
+        float total = 0.0f;
+        for (int i = 0; i < possibleBindingsinstances.Count; i++)
         {
-            var newModel = possibleBindingsinstances[i].VirtualRun(context);
-            foreach(var goal in m_goals)
+            ActionInstance binding = possibleBindingsinstances[i];
+            var newModel = binding.VirtualRun(context);
+            foreach (var goal in m_goals)
             {
                 switch (goal.type)
                 {
                     case InfoType.relationship://This implementation is temporary, for "simplicity" (I know), I'll implement a way to estimate the distance to a desired relationship later (probably using the prerequisite for such a relationship
-                        if(newModel.Characters[goal.Holder].Relationships.ContainsKey(goal.Recipient) == goal.BooleanValue)
+                        if (newModel.Characters[goal.Holder].Relationships.ContainsKey(goal.Recipient) == goal.BooleanValue)
                         {
                             possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
                         }
@@ -129,15 +157,27 @@ public class Character : ScriptableObject
                         break;
                     case InfoType.opinion:
                         throw new NotImplementedException();//this one is going to require big refactoring of some of the data structure, and generally custom Inspectors to be usable, so it will wait for now.
-                        break;
                     default:
                         Debug.LogError("unimplemented goal type : " + goal.type.ToString());
                         break;
                 }
             }
+            total += binding.ExpectedImmediateUtility * binding.expectedProbability;
         }
-        return true;
+        return total;
     }
+
+    private float EvaluateBindingsAffinity(List<ActionInstance> possibleBindingsinstances)
+    {
+        float Attractiveness = 1.0f;
+        for (int i = 0; i < possibleBindingsinstances.Count; i++)
+        {
+            ActionInstance binding = possibleBindingsinstances[i];
+            Attractiveness *= Mathf.Pow(binding.Affinity, binding.expectedProbability);
+        }
+        return Attractiveness;
+    }
+
     private List<ActionInstance> FindControlledBindings(Action action)//Looks for all valid bindings that are under the character control, Proably a major memory hog on some "domains" and also slow
     {
         var unboundInstance = new ActionInstance(action,new Dictionary<Role, Character>());
@@ -147,9 +187,10 @@ public class Character : ScriptableObject
         return RecursiveBindings(unboundInstance ,OpenCandidateList, action.ActorControlledRoles);
     }
 
-    private List<ActionInstance> RecursiveBindings(ActionInstance instanceBase, List<CharModel> openCandidateList, List<RoleBinding> RoleSet, int depth=0)//the ActionInstance passed at the base of the recursion should only have the actor role bound
+    internal List<ActionInstance> RecursiveBindings(ActionInstance instanceBase, List<CharModel> openCandidateList, List<RoleBinding> RoleSet, int depth=0)//the ActionInstance passed at the base of the recursion should only have the actor role bound
     {
         List<ActionInstance> boundInstances = new List<ActionInstance>();
+        if (RoleSet.Count == 0) return boundInstances;
         foreach(var character in openCandidateList)
         {
             ActionInstance RecursionInstance = new ActionInstance(instanceBase);
@@ -211,7 +252,6 @@ public class Character : ScriptableObject
 public struct Goal
 {
     /*I wanted to have a worldModel object to represent the target state of the goal, but world model can contain objects with goals in them, creating a serialization "loop" that Unity doesn't like.*/
-
     public InfoType type;
     public float Importance;//how important is the fullfillement of this goal for the character. when the progress towards a goal is converted into utility during action evaluation, the result is multiplied by the importance of the goal, ie progress on a highly important goal is more valuable and setback are more strongly avoided.
     public Character Holder;
@@ -262,7 +302,7 @@ public class CharModel//model that the character have of each other
     
     public List<Goal> goals;
     public RelationShipDictionary Relationships;
-    public WorldModel worldModel;//little afraid of infinite nested worldModel here, but it opens a whole category of goals.
+    //public WorldModel worldModel; //This currently generate serialization loops, but we can do without for now, we will need to get someway to represent other characters opinion but I think this will be for qnother iteration
 
     internal CharModel copy()
     {

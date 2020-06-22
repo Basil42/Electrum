@@ -5,6 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName ="new Action set", menuName = "Electrum/Action Set")]
 public class ActionSet : ScriptableObject
 {
-    public readonly List<Action> actions;
+    public List<Action> actions = new List<Action>();
 
 }

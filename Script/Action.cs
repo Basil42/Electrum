@@ -32,6 +32,7 @@ public class ActionInstance
     public float Affinity = 1.0f;
     public float ExpectedImmediateUtility = 0.0f;
     public float ExpectedTotalUtility = 0.0f;//based on the expected utility of future actions after that one.
+    public float expectedProbability = 0.0f;
     public ActionInstance(Action template, Dictionary<Role, Character> involvedCharacters)
     {
         Template = template;
@@ -55,6 +56,8 @@ public class ActionInstance
             }
         }
     }
+
+   
 
     internal void RunEngineControlledPreferenceRules()
     {

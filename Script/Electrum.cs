@@ -16,6 +16,7 @@ public class Electrum : MonoBehaviour
     public static Electrum singleton;
     public static ActionSet actionSet;
     public static float affinityTreshold;
+    public static Action DoNothingAction;
 
     public static int MaxBindingCandidatesWarning { get; internal set; }
     public static int MaxBindingCandidatesAbort { get; internal set; }
@@ -39,7 +40,10 @@ public class Electrum : MonoBehaviour
         }
         foreach (var character in cast) character.ConstructownModel();
     }
+    
 }
+
+
 
 public enum InfoType//may later add the goal and opinion types
 {
