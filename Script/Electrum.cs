@@ -51,15 +51,7 @@ public enum InfoType//may later add the goal and opinion types
     trait,
     opinion
 }
-[Serializable]
-public class Effect // this class expresses changes to the world state
-{
-    public InfoType type;
-    public List<Character> holders;
-    public List<Character> recipients;//should be empty if the info is a trait
-    public ValueChangeOperator Operator;//inspired by the ensemble way of doing things, it kind of work for authoring purposes
-    public float value;
-}
+
 
 
 

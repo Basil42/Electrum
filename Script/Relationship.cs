@@ -16,6 +16,7 @@ public enum RelationshipType
   enemy,
   parent,
   child,
+  sibling,
   liege,
   vassal
 }

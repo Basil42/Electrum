@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using RotaryHeart.Lib.SerializableDictionary;
 
 [Serializable]
 public class CharModelDictionary : SerializableDictionaryBase<Character, CharModel> { }

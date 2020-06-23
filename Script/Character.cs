@@ -77,11 +77,8 @@ public class Character : ScriptableObject
             var doNothingAction = new ActionInstance(Electrum.DoNothingAction,doNothingCharacters );
             return doNothingAction;
         }
-        return finalActions[0];
+        return finalActions[0];//probably want a bit more impredictablility here. But it's better for testing purposes.
     }
-
-    
-
     private bool EstimateBindingsQuality(ActionInstance instance, WorldModel context)//calculate expected affinity from the instance, as well as expected utility, recursion would happen here to evaluate future actions
     {
         var OpenCandidateList = new List<CharModel>(context.Characters.Values);
@@ -100,7 +97,6 @@ public class Character : ScriptableObject
         instance.ExpectedImmediateUtility = EvaluateBindingsUtility(context, possibleBindingsinstances);
         return true;
     }
-
     private void SetBindingsProbability(List<ActionInstance> possibleBindingsinstances)
     {
         float likelyhoodWeightCumulated = 0.0f;
@@ -118,7 +114,6 @@ public class Character : ScriptableObject
 
         }
     }
-
     private float EvaluateBindingsUtility(WorldModel context, List<ActionInstance> possibleBindingsinstances)
     {
         float total = 0.0f;
@@ -172,7 +167,6 @@ public class Character : ScriptableObject
         }
         return total;
     }
-
     private float EvaluateBindingsAffinity(List<ActionInstance> possibleBindingsinstances)
     {
         float Attractiveness = 1.0f;
@@ -183,7 +177,6 @@ public class Character : ScriptableObject
         }
         return Attractiveness;
     }
-
     private List<ActionInstance> FindControlledBindings(Action action)//Looks for all valid bindings that are under the character control, Proably a major memory hog on some "domains" and also slow
     {
         var unboundInstance = new ActionInstance(action,new Dictionary<Role, Character>());
@@ -192,7 +185,6 @@ public class Character : ScriptableObject
         //This is one of the point where we could do manual memory management, this is going to make a LOT of garbage
         return RecursiveBindings(unboundInstance ,OpenCandidateList, action.ActorControlledRoles);
     }
-
     internal List<ActionInstance> RecursiveBindings(ActionInstance instanceBase, List<CharModel> openCandidateList, List<RoleBinding> RoleSet, int depth=0)//the ActionInstance passed at the base of the recursion should only have the actor role bound
     {
         List<ActionInstance> boundInstances = new List<ActionInstance>();
@@ -239,7 +231,6 @@ public class Character : ScriptableObject
         }
         return boundInstances;//should contain all completely bound possible instances of the action. If empty it means no set of characters fullfilled all conditions
     }
-    
     internal void ConstructownModel()//should only be called once per character, as it keeps references to the real values;
     {
         var model = new CharModel();
