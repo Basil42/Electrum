@@ -17,6 +17,7 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     public float tolerance = 0.1f;
     public float value = 0.0f;
     [Header("relationship only")]
+    public RelationshipType relationshipType;
     public bool BoolValue;
     //add values for goals and opinions here, vastly more complicated
 
@@ -30,7 +31,12 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
         switch (type)
         {
             case InfoType.relationship:
-                return (BoolValue == holderModel.Relationships.ContainsKey(recipientModel.Character));
+                if (!holderModel.Relationships.ContainsKey(recipientModel.Character))
+                {
+                    return !BoolValue;
+
+                }
+                return BoolValue == holderModel.Relationships[recipientModel.Character].relationships.Exists(x => x == relationshipType);
             case InfoType.trait:
                 float TraitValue;
                 if (!holderModel.traits.TryGetValue(trait, out TraitValue)) return Operator == ValueComparisonOperator.lessThan;
