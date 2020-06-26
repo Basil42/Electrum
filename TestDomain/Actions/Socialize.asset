@@ -38,6 +38,59 @@ MonoBehaviour:
     _keyValues: 
     _keys: 
     _values: []
-  ActorControlledRoles: []
+  ActorControlledRoles:
+  - role: 2
+    Mandatory: 1
+    holder: {fileID: 0}
+    conditions:
+    - type: 0
+      holder: 1
+      recipient: 2
+      trait: 0
+      Operator: 0
+      tolerance: 0
+      value: 0
+      relationshipType: 1
+      BoolValue: 1
+    DesirabilityRules:
+    - conditions:
+      - type: 0
+        holder: 1
+        recipient: 2
+        trait: 0
+        Operator: 0
+        tolerance: 0
+        value: 0
+        relationshipType: 3
+        BoolValue: 1
+      baseInfluence: 1.4
+      Modifiers:
+      - trait: 2
+        holder: 2
+        curve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: -0.0026817322
+            value: 0.49734497
+            inSlope: 0.50131065
+            outSlope: 0.50131065
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0.50131065
+            outSlope: 0.50131065
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 0
+    LikelyhoodRules: []
   EngineControlledRoles: []
   effects: []

@@ -7,6 +7,7 @@ using UnityEngine;
 [Serializable]
 public class Condition//used to check if a condition is fullfilled, can be evaluated in the "real" world state, a character world state or a virtual worldstate used for decision making
 {
+    /*TODO: see if a custom inspector will work with the serialisation to make the inspector cleaner*/
     public InfoType type = InfoType.relationship; //type of information, for example a relation;
     public Role holder;//initially a list, but created complications. having multiple conditions should take care of most cases, but we might want to have more complex conditions later on.
     public Role recipient;//should be empty if the info is a trait
@@ -73,7 +74,7 @@ public class influenceRule
     public float baseInfluence = 1.0f;
     [Header("modifiers")]
     [Tooltip("you can check for a value(never a relationship among participants of an action and generate influence based on this value (make more influence the more a character likes another for example)")]
-    List<influenceMod> Modifiers;
+    public List<influenceMod> Modifiers;
 
     internal float getAffinityMod(ActionInstance actionInstance)
     {

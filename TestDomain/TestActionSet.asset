@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1bccae4e330e294fa554234cb782269, type: 3}
   m_Name: TestActionSet
   m_EditorClassIdentifier: 
-  actions: []
+  actions:
+  - {fileID: 11400000, guid: 076c0366c8388ee40bb81fc6258fe3ee, type: 2}

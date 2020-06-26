@@ -68,14 +68,17 @@ MonoBehaviour:
     - {fileID: 11400000}
     - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
     - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+    - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
     _keys:
     - {fileID: 11400000}
     - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
     - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+    - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
     _values:
     - relationships: 00000000
     - relationships: 0a00000003000000
     - relationships: 0600000007000000
+    - relationships: 01000000
   m_goals: []
   worldModel:
     Characters:
@@ -101,6 +104,289 @@ MonoBehaviour:
         elementIcon: {fileID: 0}
       reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60, type: 2}
       isExpanded: 0
-      _keyValues: []
-      _keys: []
-      _values: []
+      _keyValues:
+      - {fileID: 11400000}
+      - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+      - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
+      - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+      _keys:
+      - {fileID: 11400000}
+      - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+      - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
+      - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+      _values:
+      - Character: {fileID: 11400000}
+        trust: 1
+        traits:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 1
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 1
+          _keyValues: 010000000000000002000000
+          _keys: 010000000000000002000000
+          _values:
+          - 0.2
+          - 0.7
+          - 0.6
+        goals: []
+        Relationships:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 1
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60,
+            type: 2}
+          isExpanded: 1
+          _keyValues:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
+          _keys:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
+          _values:
+          - relationships: 00000000
+          - relationships: 0a00000003000000
+          - relationships: 0600000007000000
+          - relationships: 01000000
+      - Character: {fileID: 11400000}
+        trust: 1
+        traits:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 1
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 1
+          _keyValues: 010000000000000002000000
+          _keys: 010000000000000002000000
+          _values:
+          - 0.2
+          - 0.4
+          - 0.8
+        goals: []
+        Relationships:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 0
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60,
+            type: 2}
+          isExpanded: 0
+          _keyValues:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _keys:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _values:
+          - relationships: 00000000
+          - relationships: 0a00000003000000
+          - relationships: 0600000007000000
+      - Character: {fileID: 11400000}
+        trust: 1
+        traits:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 1
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 1
+          _keyValues: 010000000000000002000000
+          _keys: 010000000000000002000000
+          _values:
+          - 0.2
+          - 0.4
+          - 0.8
+        goals: []
+        Relationships:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 0
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60,
+            type: 2}
+          isExpanded: 0
+          _keyValues:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _keys:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _values:
+          - relationships: 00000000
+          - relationships: 0a00000003000000
+          - relationships: 0600000007000000
+      - Character: {fileID: 11400000}
+        trust: 1
+        traits:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 1
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 0}
+          isExpanded: 1
+          _keyValues: 010000000000000002000000
+          _keys: 010000000000000002000000
+          _values:
+          - 0.6
+          - 0.8
+          - 0.4
+        goals: []
+        Relationships:
+          reorderableList:
+            canAdd: 1
+            canRemove: 1
+            draggable: 1
+            expandable: 1
+            multipleSelection: 1
+            isExpanded: 0
+            label:
+              m_Text: Keys
+              m_Image: {fileID: 0}
+              m_Tooltip: 
+            headerHeight: 18
+            footerHeight: 13
+            slideEasing: 0.15
+            verticalSpacing: 2
+            showDefaultBackground: 1
+            elementDisplayType: 0
+            elementNameProperty: 
+            elementNameOverride: 
+            elementIcon: {fileID: 0}
+          reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60,
+            type: 2}
+          isExpanded: 0
+          _keyValues:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _keys:
+          - {fileID: 11400000}
+          - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
+          - {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
+          _values:
+          - relationships: 00000000
+          - relationships: 0a00000003000000
+          - relationships: 0600000007000000

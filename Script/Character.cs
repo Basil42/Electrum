@@ -41,7 +41,11 @@ public class Character : ScriptableObject
                 if (!m_traits.ContainsKey(affinityRule.Key))continue;
                 BaseAffinity *= affinityRule.Value.Evaluate(m_traits[affinityRule.Key]);//get the affinity modifier associated with this trait value.
             }
-            if (BaseAffinity < Electrum.affinityTreshold) continue;
+            if (BaseAffinity < Electrum.affinityTreshold)
+            {
+                Debug.Log("Action " + action.name + " discarded with affinity of: " + BaseAffinity);
+                continue;
+            }
             //get candidate actionInstance with the different possible role bindings
             List<ActionInstance> ActionCandidates = FindControlledBindings(action);
             if (ActionCandidates == null) continue;//the action has been aborted;
@@ -50,7 +54,9 @@ public class Character : ScriptableObject
                 ActionInstance instance = ActionCandidates[i];
                 if (!EstimateBindingsQuality(instance, worldModel))
                 {
+                    Debug.Log("instance removed with affinity " + instance.Affinity);
                     ActionCandidates.Remove(instance);//bindings are expected to be too bad to consider taking the action 
+
                 }
                 else
                 {
@@ -75,6 +81,7 @@ public class Character : ScriptableObject
             var doNothingCharacters = new Dictionary<Role, Character>();
             doNothingCharacters.Add(Role.actor, this);
             var doNothingAction = new ActionInstance(Electrum.DoNothingAction,doNothingCharacters );
+            Debug.Log(name + " decided to take no action.");
             return doNothingAction;
         }
         return finalActions[0];//probably want a bit more impredictablility here. But it's better for testing purposes.
@@ -181,14 +188,15 @@ public class Character : ScriptableObject
     {
         var unboundInstance = new ActionInstance(action,new Dictionary<Role, Character>());
         unboundInstance.InvolvedCharacters.Add(Role.actor, this);//binds the acting character
-        var OpenCandidateList = new List<CharModel>(worldModel.Characters.Values);//this should hopefully never contain a model of the actor 
+        var OpenCandidateList = new List<CharModel>(worldModel.Characters.Values);
+        OpenCandidateList.Remove(worldModel.Characters[this]);
         //This is one of the point where we could do manual memory management, this is going to make a LOT of garbage
         return RecursiveBindings(unboundInstance ,OpenCandidateList, action.ActorControlledRoles);
     }
     internal List<ActionInstance> RecursiveBindings(ActionInstance instanceBase, List<CharModel> openCandidateList, List<RoleBinding> RoleSet, int depth=0)//the ActionInstance passed at the base of the recursion should only have the actor role bound
     {
         List<ActionInstance> boundInstances = new List<ActionInstance>();
-        if (RoleSet.Count == 0) return boundInstances;
+        if (RoleSet.Count == 0 || depth == RoleSet.Count) return boundInstances;
         foreach(var character in openCandidateList)
         {
             ActionInstance RecursionInstance = new ActionInstance(instanceBase);
