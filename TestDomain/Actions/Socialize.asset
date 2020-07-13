@@ -50,8 +50,8 @@ MonoBehaviour:
       Operator: 0
       tolerance: 0
       value: 0
-      relationshipType: 1
-      BoolValue: 1
+      relationshipType: 0
+      BoolValue: 0
     DesirabilityRules:
     - conditions:
       - type: 0

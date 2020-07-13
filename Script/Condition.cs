@@ -65,6 +65,12 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     {
         throw new NotImplementedException();
     }
+    internal float getDistance(WorldModel worldModel, RoleCharacterDictionnary involvedCharacter)//negative results indicates the condition is fullfilled in this world state, this is a character evaluation
+    {
+        //to do: solve the serialization problems to let character have non recursive models of the opinion of other characters
+        throw new NotImplementedException();
+    }
+   
 }
 [Serializable]
 public class influenceRule

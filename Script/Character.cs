@@ -128,49 +128,12 @@ public class Character : ScriptableObject
         {
             ActionInstance binding = possibleBindingsinstances[i];
             var newModel = binding.VirtualRun(context);
-            foreach (var goal in m_goals)
+            float Utility = 0.0f;
+            foreach(var goal in m_goals)
             {
-                switch (goal.type)
-                {
-                    case InfoType.relationship://This implementation is temporary, for "simplicity" (I know), I'll implement a way to estimate the distance to a desired relationship later (probably using the prerequisite for such a relationship
-                        if (newModel.Characters[goal.Holder].Relationships.ContainsKey(goal.Recipient) == goal.BooleanValue)
-                        {
-                            possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
-                        }
-                        break;
-                    case InfoType.trait:
-                        float newValue = 0.0f;
-                        newModel.Characters[goal.Holder].traits.TryGetValue(goal.trait, out newValue);
-                        float oldValue = 0.0f;
-                        context.Characters[goal.Holder].traits.TryGetValue(goal.trait, out oldValue);
-                        var goalTarget = goal.value;
-                        switch (goal.Operator)
-                        {
-                            case ValueComparisonOperator.lessThan:
-                                if (newValue < goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
-                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (oldValue - newValue) * goal.Importance;
-                                break;
-                            case ValueComparisonOperator.MoreThan:
-                                if (newValue > goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
-                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (newValue - oldValue) * goal.Importance;
-                                break;
-                            case ValueComparisonOperator.Equals:
-                                if ((newValue - goal.Tolerance) < goal.value && (newValue + goal.Tolerance) > goal.value) possibleBindingsinstances[i].ExpectedImmediateUtility += goal.Importance;
-                                else possibleBindingsinstances[i].ExpectedImmediateUtility += (Mathf.Abs(newValue - goal.value) - Mathf.Abs(oldValue - goal.value)) * goal.Importance;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        break;
-                    case InfoType.opinion:
-                        throw new NotImplementedException();//this one is going to require big refactoring of some of the data structure, and generally custom Inspectors to be usable, so it will wait for now.
-                    default:
-                        Debug.LogError("unimplemented goal type : " + goal.type.ToString());
-                        break;
-                }
+                Utility += goal.getProgress(context, newModel)*goal.importance;
             }
-            total += binding.ExpectedImmediateUtility * binding.expectedProbability;
+            total += Utility;
         }
         return total;
     }
@@ -246,16 +209,8 @@ public class Character : ScriptableObject
         model.goals = m_goals;
         model.Relationships = m_relationships;
         model.traits = m_traits;
-        model.trust = 1.0f;
+        //throw new NotImplementedException();//build opinion model
         if (worldModel.Characters.ContainsKey(this)) worldModel.Characters[this] = model;
         else worldModel.Characters.Add(this, model);
     }
 }
-
-
-
-
-
-
-
-

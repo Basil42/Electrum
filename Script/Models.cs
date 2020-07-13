@@ -32,24 +32,34 @@ public class CharModel//model that the character have of each other
 {
     /*These models are much simpler than what we initially intended (information source, and trustworthiness is not being tracked), but it will do for Ensemble level of performance*/
     public Character Character;
-    public float trust;
     public TraitValueDictionary traits;
 
     public List<Goal> goals;
     public RelationShipDictionary Relationships;
-    //public WorldModel worldModel; //This currently generate serialization loops, but we can do without for now, we will need to get someway to represent other characters opinion but I think this will be for qnother iteration
+    public WorldModel worldModel; //This currently generate serialization loops, but we require something like it for utility
+    public OpinionDictionary opinions;
 
     internal CharModel copy()
     {
         var result = new CharModel();
         result.Character = Character;
-        result.trust = trust;
         result.traits = new TraitValueDictionary();
         result.traits.CopyFrom(traits);
         result.goals = new List<Goal>(goals);
         result.Relationships = new RelationShipDictionary();
         result.Relationships.CopyFrom(Relationships);
+        result.opinions = new OpinionDictionary();
+        result.opinions.CopyFrom(opinions);
         return result;
     }
     public CharModel() { }
 }
+
+[Serializable]
+public class OpinionModel
+{
+    public List<Trait> traits;
+    public List<Goal> goals;//This one will probably be updated through Action effects.
+} 
+[Serializable]
+public class OpinionDictionary : SerializableDictionaryBase<Character, OpinionModel> { }
