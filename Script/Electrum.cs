@@ -51,6 +51,12 @@ public enum InfoType//may later add the goal and opinion types
     trait,
     opinion
 }
+public enum OpinionType
+{
+    trait,
+    relationship,
+    goal
+}
 
 
 

@@ -206,7 +206,7 @@ public class Character : ScriptableObject
     {
         var model = new CharModel();
         model.Character = this;
-        model.goals = m_goals;
+        //model.goals = m_goals;
         model.Relationships = m_relationships;
         model.traits = m_traits;
         //throw new NotImplementedException();//build opinion model

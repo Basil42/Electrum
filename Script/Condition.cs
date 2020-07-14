@@ -7,7 +7,8 @@ using UnityEngine;
 [Serializable]
 public class Condition//used to check if a condition is fullfilled, can be evaluated in the "real" world state, a character world state or a virtual worldstate used for decision making
 {
-    /*TODO: see if a custom inspector will work with the serialisation to make the inspector cleaner*/
+    /*TODO: see if a custom inspector will work with the serialisation to make the inspector cleaner and more usable (possibly having inheritence on condition s too)*/
+    //See custom propriety drawer
     public InfoType type = InfoType.relationship; //type of information, for example a relation;
     public Role holder;//initially a list, but created complications. having multiple conditions should take care of most cases, but we might want to have more complex conditions later on.
     public Role recipient;//should be empty if the info is a trait
@@ -21,7 +22,8 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     public RelationshipType relationshipType;
     public bool BoolValue;
     //add values for goals and opinions here, vastly more complicated
-
+    [Header("opinion only")]
+    OpinionType opinionType;
 
     internal bool isMet(ActionInstance instance, ref WorldModel worldModel)//indicate if the condition is met in the perspective of the character holding this worldmodel uses
     {
@@ -61,13 +63,45 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
                 return false;
         }
     }
-    internal bool isMet(ActionInstance instance)//check if this action meets the condition in the "real world", might be useful sometimes, left unimplemented for now
+    internal bool isMet(ActionInstance instance)//check if this action meets the condition in the "real world", to do
     {
         throw new NotImplementedException();
     }
     internal float getDistance(WorldModel worldModel, RoleCharacterDictionnary involvedCharacter)//negative results indicates the condition is fullfilled in this world state, this is a character evaluation
     {
-        //to do: solve the serialization problems to let character have non recursive models of the opinion of other characters
+        switch (type)
+        {
+            case InfoType.relationship:
+                throw new NotImplementedException();//will require reference to "trigger rules". Make it so it targets the most imediate path towards that relationship (more advanced heuristics might be desirable later)
+                break;
+            case InfoType.trait:
+                CharModel characterModel;
+                float traitValue;
+                if (!worldModel.Characters.TryGetValue(involvedCharacter[holder], out characterModel) || !characterModel.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;// assume middling trait in the absence of information, I'm thinking of having a sort of "reputation" object that provides default assumption about a character.
+                switch (Operator)
+                {
+                    case ValueComparisonOperator.lessThan:
+                        return traitValue - value;
+                    case ValueComparisonOperator.MoreThan:
+                        return value - traitValue;
+                    case ValueComparisonOperator.Equals:
+                        return Mathf.Abs(value - traitValue);
+                    default:
+                        break;
+                }
+                break;
+            case InfoType.opinion:
+                if (recipient == Role.none) 
+                {
+                    Debug.LogError("Opinion condition has undefined recipient. Aborting distance evaluation");
+                    //add proper exeption handling
+                }
+                throw new NotImplementedException();
+                
+                break;
+            default:
+                break;
+        }
         throw new NotImplementedException();
     }
    

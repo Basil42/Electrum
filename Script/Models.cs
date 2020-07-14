@@ -36,7 +36,6 @@ public class CharModel//model that the character have of each other
 
     public List<Goal> goals;
     public RelationShipDictionary Relationships;
-    public WorldModel worldModel; //This currently generate serialization loops, but we require something like it for utility
     public OpinionDictionary opinions;
 
     internal CharModel copy()
@@ -58,8 +57,9 @@ public class CharModel//model that the character have of each other
 [Serializable]
 public class OpinionModel
 {
-    public List<Trait> traits;
+    public TraitValueDictionary traits;
     public List<Goal> goals;//This one will probably be updated through Action effects.
+    public RelationShipDictionary relationships;
 } 
 [Serializable]
 public class OpinionDictionary : SerializableDictionaryBase<Character, OpinionModel> { }
