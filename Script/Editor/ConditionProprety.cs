@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-4[CustomPropertyDrawer(typeof(NewCondition))]
-public class ConditionProprety : MonoBehaviour
+
+[CustomPropertyDrawer(typeof(NewCondition))]
+public class ConditionProprety : PropertyDrawer
 {
-    
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        base.OnGUI(position, property, label);
+    }
 }
