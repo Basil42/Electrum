@@ -2,7 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
+using UnityEditor;
+using System.Runtime.Serialization;
 
 [Serializable]
 public class Condition//used to check if a condition is fullfilled, can be evaluated in the "real" world state, a character world state or a virtual worldstate used for decision making
@@ -25,7 +28,7 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     [Header("opinion only")]
     OpinionType opinionType;
 
-    internal bool isMet(ActionInstance instance, ref WorldModel worldModel)//indicate if the condition is met in the perspective of the character holding this worldmodel uses
+    internal bool isMet(ActionInstance instance, WorldModel worldModel)//indicate if the condition is met in the perspective of the character holding this worldmodel uses
     {
         CharModel holderModel;
         if (!worldModel.Characters.TryGetValue(instance.InvolvedCharacters[holder], out holderModel)) return false;//sometimes unbound roles will be checked against in influencerules, but it might hide poorly configured condition order
@@ -67,7 +70,7 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     {
         throw new NotImplementedException();
     }
-    internal float getDistance(WorldModel worldModel, RoleCharacterDictionnary involvedCharacter)//negative results indicates the condition is fullfilled in this world state, this is a character evaluation
+    internal float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacter)//negative results indicates the condition is fullfilled in this world state, this is a character evaluation
     {
         switch (type)
         {
@@ -106,38 +109,135 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
     }
    
 }
-[Serializable]
-public class influenceRule
+public enum ConditionType
 {
-    public List<Condition> conditions;//can be empty
-    [Tooltip("base influence generated if the conditions are met")]
-    public float baseInfluence = 1.0f;
-    [Header("modifiers")]
-    [Tooltip("you can check for a value(never a relationship among participants of an action and generate influence based on this value (make more influence the more a character likes another for example)")]
-    public List<influenceMod> Modifiers;
+    trait,
+    relationship,
+    opinion,
+    goal
+}
+[Serializable]
+public abstract class NewCondition
+{
+    [SerializeField] ConditionType _type;
+    //there will pretty much always be a holder, but it might not always be the case so it will be reimplemented in each inherited class.
+    internal abstract bool isMet(Dictionary<Role,Character> involvedCharacters, WorldModel worldModel);
+    internal abstract bool isCurrentlyMet(Dictionary<Role,Character> involvedCharacters);//check if the condition is "really" met
+    internal abstract float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacters);//negative results indicate the condition is fullfilled;
+    internal abstract float getCurrentDistance(Dictionary<Role,Character> involvedCharacters);
+}
+[CustomPropertyDrawer(typeof(NewCondition))]
+public class ConditionDrawer : PropertyDrawer
+{
+    
+}
 
-    internal float getAffinityMod(ActionInstance actionInstance)
+[Serializable]
+public class TraitCondition : NewCondition
+{
+    [SerializeField]Trait _trait;
+    [SerializeField]Role _holder;
+    [SerializeField]float _value;
+    [SerializeField]ValueComparisonOperator _operator;
+    [SerializeField] float tolerance;//for the equal operator only, maybe use several layers of inheritance?
+
+    internal override float getCurrentDistance(Dictionary<Role,Character> involvedCharacters)
     {
-        float AffinityMod = baseInfluence;
-        var ActorWorldModel = actionInstance.InvolvedCharacters[Role.actor].worldModel;
-        foreach (var condition in conditions) if (!condition.isMet(actionInstance, ref ActorWorldModel)) return 1.0f;//It might be good to put this value in the hands of the user, but the UI is busy enough as it is. Good once/if we have custom editors.
-        foreach (var mod in Modifiers)
+        Character holderRef = involvedCharacters[_holder];
+        if (!involvedCharacters.TryGetValue(_holder, out holderRef))
         {
-            float traitValue;
-            if (!ActorWorldModel.Characters[actionInstance.InvolvedCharacters[mod.holder]].traits.TryGetValue(mod.trait, out traitValue)) continue;
-            AffinityMod *= mod.curve.Evaluate(traitValue);
+            Debug.Log("evaluated a condition with unassigned role");
+            return 5000.0f;//role wasn't assigned to a character, probably a sign that something is amiss
         }
-        return AffinityMod;
+        float traitValue;
+        if (!holderRef.m_traits.TryGetValue(_trait, out traitValue)) return 5000.0f;//character does not have the specified trait, this is a potential expected behavior(we could populate unspecified trait values with default ones
+        switch (_operator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue - _value;
+            case ValueComparisonOperator.MoreThan:
+                return _value - traitValue;
+            case ValueComparisonOperator.Equals:
+                return Mathf.Abs(_value - traitValue);
+            default:
+                Debug.LogError("Invalid comparaison operator used in distance estimation to Trait condition. Trait: " + _operator.ToString());
+                throw new NotImplementedException(); //using this exception because we don't need much extra info.
+        }
+    }
+
+    internal override float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacters)
+    {
+        CharModel holderModel;
+        float traitValue;
+        if (!worldModel.Characters.TryGetValue(involvedCharacters[_holder], out holderModel)) traitValue = 0.5f;
+        else if (!holderModel.traits.TryGetValue(_trait, out traitValue)) traitValue = 0.5f;
+        switch (_operator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue - _value;
+            case ValueComparisonOperator.MoreThan:
+                return _value - traitValue;
+            case ValueComparisonOperator.Equals:
+                return Mathf.Abs(_value - traitValue);
+            default:
+                Debug.LogError("Invalid comparaison operator used in distance estimation to Trait condition. Trait: " + _operator.ToString());
+                throw new NotImplementedException(); //using this exception because we don't need much extra info.
+        }
+    }
+
+    internal override bool isCurrentlyMet(Dictionary<Role,Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isMet(Dictionary<Role,Character> involvedCharacters, WorldModel worldModel)
+    {
+        CharModel holderModel;
+        float traitValue;
+        if (!worldModel.Characters.TryGetValue(involvedCharacters[_holder], out holderModel)) traitValue = 0.5f;
+        else if (!holderModel.traits.TryGetValue(_trait, out traitValue)) traitValue = 0.5f;
+        switch (_operator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue < _value;
+            case ValueComparisonOperator.MoreThan:
+                return _value < traitValue;
+            case ValueComparisonOperator.Equals:
+                return Mathf.Abs(_value - traitValue) <  tolerance;
+            default:
+                Debug.LogError("Invalid comparaison operator used in distance estimation to Trait condition. Trait: " + _operator.ToString());
+                throw new NotImplementedException(); //using this exception because we don't need much extra info.
+        }
     }
 }
 
 [Serializable]
-public class influenceMod//might accept other type of information than traits, but I don't see a use case not covered by conditions
+public class ConditionContainer : ISerializationCallbackReceiver
 {
-    public Trait trait;
-    public Role holder = Role.allInvolved;
+    [NonSerialized]public List<NewCondition> conditions = new List<NewCondition>();
+    [SerializeField] List<string> conditionData = new List<string>();
+    [SerializeField] List<string> conditionTypes = new List<string>();
 
-    public AnimationCurve curve;//curve of the influence this value generate
+    public void OnAfterDeserialize()
+    {
+        conditions.Clear();//just to be sure there is no junk left in the list.
+        for(int i = 0; i < conditionData.Count; i++)
+        {
+            conditions.Add((NewCondition)JsonUtility.FromJson(conditionData[i], Type.GetType(conditionTypes[i])));
+        }
+    }
 
-
+    public void OnBeforeSerialize()
+    {
+        //could add some more error checking here to avoid loosing data if something goes wrong
+        conditionData = new List<string>();
+        conditionTypes = new List<string>();
+        foreach(var condition in conditions)
+        {
+            conditionTypes.Add(condition.GetType().ToString());
+            conditionData.Add(JsonUtility.ToJson(condition, false));
+        }
+    }
 }
+
+

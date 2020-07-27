@@ -97,7 +97,7 @@ public class ActionInstance
 public class ActionEffect
 {
     public List<Effect> effects;
-    public List<Condition> conditions;//condition that must be met for the effect to be applied, allow for more nuance with smaller authoring overhead, condition is marked unmet if it refers to an unbound role
+    public ConditionContainer conditions;//condition that must be met for the effect to be applied, allow for more nuance with smaller authoring overhead, condition is marked unmet if it refers to an unbound role
     public List<influenceRule> influenceRules;
 }
 [Serializable]
@@ -108,7 +108,7 @@ public class RoleBinding
     //to do latter, add possibility to optionally allow several character to be bound to the same role
     [HideInInspector]public Character holder;
     [Tooltip("take care to not reference unbound roles in these, mandatory role up the list and the actor are usually safe to reference")]
-    public List<Condition> conditions;//condition that must be fullfilled for the role to be bound, reference to the role will test the candidate state
+    public ConditionContainer conditions;//condition that must be fullfilled for the role to be bound, reference to the role will test the candidate state
     public List<influenceRule> DesirabilityRules;//influenceRules that let the character mesure how desirable a binding is (if the actor controls that bindings
     public List<influenceRule> LikelyhoodRules;//influence rules that determine the likelyhood for a set of bindings not controlled by the actor to be picked, should be empty for an Actor controleld bindings, as they would be the same as the desirability ones
 

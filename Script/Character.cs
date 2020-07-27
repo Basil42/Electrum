@@ -165,9 +165,9 @@ public class Character : ScriptableObject
             ActionInstance RecursionInstance = new ActionInstance(instanceBase);
             RecursionInstance.InvolvedCharacters.Add(RoleSet[depth].role, character.Character);
             bool isValidCandidate = true;
-            foreach(var condition in RoleSet[depth].conditions)
+            foreach(var condition in RoleSet[depth].conditions.conditions)
             {
-                if(!condition.isMet(RecursionInstance,ref worldModel))//character did not meet a condition for this role
+                if(!condition.isMet(RecursionInstance.InvolvedCharacters,worldModel))//character did not meet a condition for this role
                 {
                     isValidCandidate = false;
                     break;

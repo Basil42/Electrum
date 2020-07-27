@@ -40,5 +40,60 @@ MonoBehaviour:
     _keys:
     - {fileID: 11400000, guid: daa6beb40cd549d459b02b4ff24885ed, type: 2}
     _values:
-    - traits: 
+    - traits:
+        reorderableList:
+          canAdd: 1
+          canRemove: 1
+          draggable: 1
+          expandable: 1
+          multipleSelection: 1
+          isExpanded: 0
+          label:
+            m_Text: Keys
+            m_Image: {fileID: 0}
+            m_Tooltip: 
+          headerHeight: 18
+          footerHeight: 13
+          slideEasing: 0.15
+          verticalSpacing: 2
+          showDefaultBackground: 1
+          elementDisplayType: 0
+          elementNameProperty: 
+          elementNameOverride: 
+          elementIcon: {fileID: 0}
+        reqReferences: {fileID: 0}
+        isExpanded: 0
+        _keyValues: 
+        _keys: 
+        _values: []
       goals: []
+      relationships:
+        reorderableList:
+          canAdd: 1
+          canRemove: 1
+          draggable: 1
+          expandable: 1
+          multipleSelection: 1
+          isExpanded: 1
+          label:
+            m_Text: Keys
+            m_Image: {fileID: 0}
+            m_Tooltip: 
+          headerHeight: 18
+          footerHeight: 13
+          slideEasing: 0.15
+          verticalSpacing: 2
+          showDefaultBackground: 1
+          elementDisplayType: 0
+          elementNameProperty: 
+          elementNameOverride: 
+          elementIcon: {fileID: 0}
+        reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60,
+          type: 2}
+        isExpanded: 1
+        _keyValues:
+        - {fileID: 11400000, guid: daa6beb40cd549d459b02b4ff24885ed, type: 2}
+        _keys:
+        - {fileID: 11400000, guid: daa6beb40cd549d459b02b4ff24885ed, type: 2}
+        _values:
+        - relationships: 0200000001000000
