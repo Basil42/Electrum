@@ -9,8 +9,8 @@ public class Electrum : MonoBehaviour
     public ElectrumSettings settings;
     [SerializeField]private ActionSet Actions = null;
     
-    public List<Character> cast;
-    public List<NarrativeGoal> beats;
+    public static List<Character> cast;
+    public static List<NarrativeGoal> beats;
 
     //static members
     public static Electrum singleton;
@@ -24,14 +24,16 @@ public class Electrum : MonoBehaviour
     private void Awake()
     {
         if (settings == null) Debug.LogError("please assign a setting object to Electrum before initializing it.");
-        if (Actions == null || Actions.actions.Count == 0) Debug.LogError("No Action set assigned, or action set has no actions");
-        if(actionSet == null) actionSet = Actions;
+        if (actionSet == null) actionSet = settings.actionSet;
+        if (actionSet == null || actionSet.actions.Count == 0) Debug.LogWarning("Action set has no action or is not assigned");
         if (singleton == null)
         {
             singleton = this;
             affinityTreshold = settings.affinityTreshold;
             MaxBindingCandidatesWarning = settings.MaxBindingsCandidateWarning;
             MaxBindingCandidatesAbort = settings.MaxBindingsCandidatesAbort;
+            DoNothingAction = settings.DoNothingAction;
+            cast = settings.cast;
         }
         else
         {

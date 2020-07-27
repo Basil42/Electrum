@@ -126,11 +126,6 @@ public abstract class NewCondition
     internal abstract float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacters);//negative results indicate the condition is fullfilled;
     internal abstract float getCurrentDistance(Dictionary<Role,Character> involvedCharacters);
 }
-[CustomPropertyDrawer(typeof(NewCondition))]
-public class ConditionDrawer : PropertyDrawer
-{
-    
-}
 
 [Serializable]
 public class TraitCondition : NewCondition
