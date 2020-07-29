@@ -6,6 +6,8 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using UnityEditor;
 using System.Runtime.Serialization;
+using UnityEditor.AI;
+using UnityEditor.Experimental.TerrainAPI;
 
 [Serializable]
 public class Condition//used to check if a condition is fullfilled, can be evaluated in the "real" world state, a character world state or a virtual worldstate used for decision making
@@ -76,7 +78,6 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
         {
             case InfoType.relationship:
                 throw new NotImplementedException();//will require reference to "trigger rules". Make it so it targets the most imediate path towards that relationship (more advanced heuristics might be desirable later)
-                break;
             case InfoType.trait:
                 CharModel characterModel;
                 float traitValue;
@@ -100,8 +101,6 @@ public class Condition//used to check if a condition is fullfilled, can be evalu
                     //add proper exeption handling
                 }
                 throw new NotImplementedException();
-                
-                break;
             default:
                 break;
         }
@@ -113,29 +112,34 @@ public enum ConditionType
 {
     trait,
     relationship,
-    opinion,
-    goal
+    opinion
+    //goal
 }
 [Serializable]
 public abstract class NewCondition
 {
-    [SerializeField] ConditionType _type;
+    [SerializeField]public  ConditionType _type;
     //there will pretty much always be a holder, but it might not always be the case so it will be reimplemented in each inherited class.
     internal abstract bool isMet(Dictionary<Role,Character> involvedCharacters, WorldModel worldModel);
     internal abstract bool isCurrentlyMet(Dictionary<Role,Character> involvedCharacters);//check if the condition is "really" met
     internal abstract float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacters);//negative results indicate the condition is fullfilled;
     internal abstract float getCurrentDistance(Dictionary<Role,Character> involvedCharacters);
+
+    //public abstract void OnGUI(Rect position, TraitCondition condition);
 }
 
 [Serializable]
 public class TraitCondition : NewCondition
 {
-    [SerializeField]Trait _trait;
-    [SerializeField]Role _holder;
-    [SerializeField]float _value;
-    [SerializeField]ValueComparisonOperator _operator;
-    [SerializeField] float tolerance;//for the equal operator only, maybe use several layers of inheritance?
-
+    [SerializeField]public Trait _trait;
+    [SerializeField]public Role _holder;
+    [SerializeField]public float _value;
+    [SerializeField]public ValueComparisonOperator _operator;
+    [SerializeField]public float tolerance;//for the equal operator only, could have used another layer of inheritance too
+    public TraitCondition() : base()
+    {
+        _type = ConditionType.trait;
+    }
     internal override float getCurrentDistance(Dictionary<Role,Character> involvedCharacters)
     {
         Character holderRef = involvedCharacters[_holder];
@@ -204,14 +208,198 @@ public class TraitCondition : NewCondition
                 throw new NotImplementedException(); //using this exception because we don't need much extra info.
         }
     }
+    //public override void OnGUI(Rect position, TraitCondition condition)
+    //{
+    //    float offset = EditorGUIUtility.singleLineHeight;
+    //    EditorGUI.BeginChangeCheck();
+    //    Trait trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._trait);
+    //    offset += EditorGUIUtility.singleLineHeight;
+    //    Role holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._holder);
+    //    offset += EditorGUIUtility.singleLineHeight;
+    //    float value = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._value);
+    //    offset += EditorGUIUtility.singleLineHeight;
+    //    ValueComparisonOperator Operator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._operator);
+    //    if (EditorGUI.EndChangeCheck())
+    //    {
+    //        condition._trait = trait;
+    //        condition._holder = holder;
+    //        condition._value = value;
+    //        condition._operator = Operator;
+    //    }
+    //    if (condition._operator == ValueComparisonOperator.Equals)
+    //    {
+    //        offset += EditorGUIUtility.singleLineHeight;
+    //        EditorGUI.BeginChangeCheck();
+    //        float tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition.tolerance);
+    //        if (EditorGUI.EndChangeCheck())
+    //        {
+    //            condition.tolerance = tolerance;
+    //        }
+    //
+    //    }
+    //}
 }
+[Serializable]
+public class RelationshipCondition : NewCondition
+{
+    [SerializeField] public RelationshipType relationship;
+    [SerializeField] public Role holder;
+    [SerializeField] public Role recipient;
+    [SerializeField] public bool relationshipStatus = false;
+
+    public RelationshipCondition() : base()
+    {
+        _type = ConditionType.relationship;
+    }
+    internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+[Serializable]
+public abstract class OpinionCondition : NewCondition
+{
+    [SerializeField]public Role holder;
+    [SerializeField]public OpinionType opinionType;
+    public OpinionCondition()
+    {
+        _type = ConditionType.opinion;
+    }
+    //public override void OnGUI(Rect position, OpinionCondition condition)
+    //{
+    //    
+    //    EditorGUI.BeginChangeCheck();
+    //    OpinionType opinionTypeSelected = (OpinionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 4.0f/*unsure*/, position.width, EditorGUIUtility.singleLineHeight), condition.opinionType);
+    //    if (EditorGUI.EndChangeCheck() && opinionTypeSelected != condition.opinionType)
+    //    {
+    //        switch (opinionTypeSelected)
+    //        {
+    //            case OpinionType.trait:
+    //                property.managedReferenceValue = new TraitOpinionCondition();
+    //                break;
+    //            case OpinionType.relationship:
+    //                property.managedReferenceValue = new RelationshipOpinionCondition();
+    //                break;
+    //            default:
+    //                break;
+    //        }
+    //    }
+    //}
+}
+[Serializable]
+public class TraitOpinionCondition : OpinionCondition
+{
+    public Trait trait;
+    public Role TraitHolder;
+    public float value;
+    public ValueComparisonOperator OpinionOperator;
+    public float tolerance;//only used for the equal operator
+
+    public TraitOpinionCondition() : base()
+    {
+        opinionType = OpinionType.trait;
+    }
+    internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
+    {
+        throw new NotImplementedException();
+    }
+}
+[Serializable]
+public class RelationshipOpinionCondition : OpinionCondition
+{
+    [SerializeField] public RelationshipType relationship;
+    [SerializeField] public Role RelationshipHolder;
+    [SerializeField] public Role RelationShipRecipient;
+    [SerializeField] public bool RelationshipStatus;
+
+    public RelationshipOpinionCondition()
+    {
+        opinionType = OpinionType.relationship;
+    }
+    internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
+    {
+        throw new NotImplementedException();
+    }
+}
+//[Serializable]
+//public class GoalCondition : NewCondition // this may need to be excluded for now, there are no good short hand to represent goals, probably too much work when you can infer goals from other informations most of the time
+//{
+//    [SerializeField] public Goal goalModel;
+//    [SerializeField] public Role holder;
+//    internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
+//    {
+//        throw new NotImplementedException();
+//    }
+//
+//    internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
+//    {
+//        throw new NotImplementedException();
+//    }
+//
+//    internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
+//    {
+//        throw new NotImplementedException();
+//    }
+//
+//    internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
+//    {
+//        throw new NotImplementedException();
+//    }
+//}
 
 [Serializable]
 public class ConditionContainer : ISerializationCallbackReceiver
 {
-    [NonSerialized]public List<NewCondition> conditions = new List<NewCondition>();
-    [SerializeField] List<string> conditionData = new List<string>();
-    [SerializeField] List<string> conditionTypes = new List<string>();
+    [NonSerialized]public List<NewCondition> conditions = new List<NewCondition>();//hopefully the serialisation of this doesn't interfere(it did)
+    [HideInInspector] List<string> conditionData = new List<string>();
+    [HideInInspector] List<string> conditionTypes = new List<string>();
+    
 
     public void OnAfterDeserialize()
     {
@@ -234,5 +422,6 @@ public class ConditionContainer : ISerializationCallbackReceiver
         }
     }
 }
+
 
 

@@ -7,7 +7,6 @@ using UnityEngine;
 public class Electrum : MonoBehaviour
 {
     public ElectrumSettings settings;
-    [SerializeField]private ActionSet Actions = null;
     
     public static List<Character> cast;
     public static List<NarrativeGoal> beats;
@@ -56,8 +55,8 @@ public enum InfoType//may later add the goal and opinion types
 public enum OpinionType
 {
     trait,
-    relationship,
-    goal
+    relationship
+    //goal
 }
 
 
