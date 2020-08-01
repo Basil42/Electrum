@@ -4,143 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using ICSharpCode.NRefactory.Ast;
+using System.Security.Principal;
 
-//[CustomPropertyDrawer(typeof(NewCondition))]
-//public class ConditionProprety : PropertyDrawer
-//{
-//    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-//    {
-//        var condition = (NewCondition)EditorHelper.GetTargetObjectOfProperty(property);
-//        //type change is done in the container GUI, doesn't seem safe to construct a new condition here.
-//        if (condition == null) property.managedReferenceValue = new TraitCondition();
-//        EditorGUI.BeginProperty(position, label, property);
 
-//        switch (condition._type)
-//        {
-//            case ConditionType.trait:
-//                TraitConditionOnGUI(position, (TraitCondition)condition);
-//                break;
-//            case ConditionType.relationship:
-//                RelationshipConditionOnGUI(position, (RelationshipCondition)condition);
-//                break;
-//            case ConditionType.opinion:
-//                OpinionConditionOnGUI(position, (OpinionCondition)condition, property); 
-//                break;
-//            default:
-//                Debug.LogError("invalid condition type " + condition._type.ToString() + " set as property");
-//                break;
-//        }
-//        //type change (done at the end to minimize interference with the rest of the GUI
-//        EditorGUI.BeginChangeCheck();
-//        ConditionType selectedType = (ConditionType)EditorGUI.EnumPopup(new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight), condition._type);
-//        if (EditorGUI.EndChangeCheck())
-//        {
-//            if (selectedType != condition._type)
-//            {
-//                property.managedReferenceValue = CreateCondition(selectedType);
-//            }
-//        }
-//        EditorGUI.EndProperty();
-//    }
-
-//    private NewCondition CreateCondition(ConditionType selectedType)
-//    {
-//        switch (selectedType)
-//        {
-//            case ConditionType.trait:
-//                return new TraitCondition();
-//            case ConditionType.relationship:
-//                return new RelationshipCondition();
-//            case ConditionType.opinion:
-//                return new TraitOpinionCondition();//using this type as the default one.
-//            default:
-//                Debug.LogError("attempted to create a condition of type " + selectedType + " which is not implemented in the property drawer");
-//                throw new NotImplementedException();
-//        }
-//    }
-
-//    private void OpinionConditionOnGUI(Rect position, OpinionCondition condition, SerializedProperty property)
-//    {
-//        switch (condition.opinionType)
-//        {
-//            case OpinionType.trait:
-//                OpinionTraitConditionOnGUI(position, (TraitOpinionCondition)condition);
-//                break;
-//            case OpinionType.relationship:
-//                OpinionRelationshipOnGUI(position, (RelationshipOpinionCondition)condition);
-//                break;
-//            default:
-//                Debug.LogError("invalid opinion condition type : " + condition.opinionType.ToString());
-//                throw new NotImplementedException();
-//        }
-//        EditorGUI.BeginChangeCheck();
-//        OpinionType opinionTypeSelected = (OpinionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 4.0f/*unsure*/, position.width, EditorGUIUtility.singleLineHeight),condition.opinionType);
-//        if (EditorGUI.EndChangeCheck() && opinionTypeSelected != condition.opinionType)
-//        {
-//            switch (opinionTypeSelected)
-//            {
-//                case OpinionType.trait:
-//                    property.managedReferenceValue = new TraitOpinionCondition();
-//                    break;
-//                case OpinionType.relationship:
-//                    property.managedReferenceValue = new RelationshipOpinionCondition();
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-//    }
-
-//    private void OpinionRelationshipOnGUI(Rect position, RelationshipOpinionCondition condition)
-//    {
-//        throw new NotImplementedException();
-//    }
-
-//    private void OpinionTraitConditionOnGUI(Rect position, TraitOpinionCondition condition)
-//    {
-//        throw new NotImplementedException();
-//    }
-
-//    private void RelationshipConditionOnGUI(Rect position, RelationshipCondition condition)
-//    {
-//        throw new NotImplementedException();
-//    }
-
-//    private void TraitConditionOnGUI(Rect position, TraitCondition condition)
-//    {
-//        
-
-//        }
-//    }
-
-//    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-//    {
-//        var condition = (NewCondition)EditorHelper.GetTargetObjectOfProperty(property);
-//        switch (condition._type)
-//        {
-//            case ConditionType.trait:
-//                float height = EditorGUIUtility.singleLineHeight * 5.0f;
-//                if (((TraitCondition)condition)._operator == ValueComparisonOperator.Equals) height += EditorGUIUtility.singleLineHeight;
-//                return height;
-//            case ConditionType.relationship:
-//                return EditorGUIUtility.singleLineHeight * 5.0f;
-//            case ConditionType.opinion:
-//                switch (((OpinionCondition)condition).opinionType)
-//                {
-//                    case OpinionType.trait:
-//                        return EditorGUIUtility.singleLineHeight * 8.0f;
-//                    case OpinionType.relationship:
-//                        return EditorGUIUtility.singleLineHeight * 7.0f;
-//                    default:
-//                        Debug.LogError("Invalid or unimplemented opinion type " + ((OpinionCondition)condition).opinionType.ToString() + " set as property");
-//                        return 0.0f;
-//                }
-//            default:
-//                Debug.LogError("invalid or unimplemented condition type " + condition._type.ToString() + " set as property.");
-//                return 0.0f;
-//        }
-//    }
-//}
 [CustomPropertyDrawer(typeof(ConditionContainer))]
 public class ConditionContDrawer : PropertyDrawer
 {
@@ -149,19 +15,32 @@ public class ConditionContDrawer : PropertyDrawer
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         //add a frame for this
-        EditorGUI.BeginProperty(position,new GUIContent("Conditions"),property);
         ConditionContainer cont = (ConditionContainer)EditorHelper.GetTargetObjectOfProperty(property);
         var list = cont.conditions;
-        float offset =0.0f;
+        float offset = 0.0f;
+        label.text = "Conditions";
+       
+        var WrapperLabel = EditorGUI.BeginProperty(position, label, property);
+        EditorGUI.LabelField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), new GUIContent("Conditions"));
+       
+        offset += Vstep;
+        
         for (int i = 0; i < list.Count; i++)
         {
+            //could do a foldout here
+            EditorGUI.indentLevel++;
+            EditorGUI.PrefixLabel(GetNextRectangle(position, ref offset), new GUIContent("Condition"));
+            EditorGUI.indentLevel++;
             NewCondition condition = list[i];
             EditorGUI.BeginChangeCheck();
-            ConditionType requestedType = (ConditionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._type);
+            ConditionType requestedType = (ConditionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight),new GUIContent("Type") ,condition._type);
+            offset += Vstep;
             if (EditorGUI.EndChangeCheck() && requestedType != condition._type)
             {
                 list[i] = CreateCondition(requestedType);
+                EditorUtility.SetDirty(property.serializedObject.targetObject);
             }
+            EditorGUI.BeginChangeCheck();
             switch (list[i]._type)
             {
                 case ConditionType.trait:
@@ -176,9 +55,22 @@ public class ConditionContDrawer : PropertyDrawer
                 default:
                     break;
             }
+            //remove button
+            if (GUI.Button(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), new GUIContent("remove")))
+            {
+                list.RemoveAt(i);
+                i--;
+            }
+            if(EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(property.serializedObject.targetObject); ;
+            offset += Vstep;
+            EditorGUI.indentLevel -= 2;
+        }
+        if(GUI.Button(new Rect(position.x,position.y + offset,position.width,EditorGUIUtility.singleLineHeight),new GUIContent("Add")))
+        {
+            list.Add(new TraitCondition());
+            EditorUtility.SetDirty(property.serializedObject.targetObject);
         }
         EditorGUI.EndProperty();
-        //add buttons and stuff
         
     }
 
@@ -186,7 +78,7 @@ public class ConditionContDrawer : PropertyDrawer
     {
         OpinionCondition condition = (OpinionCondition)list[i];
         EditorGUI.BeginChangeCheck();
-        condition.opinionType =(OpinionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.opinionType);
+        condition.opinionType =(OpinionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("Opinion Type") ,condition.opinionType);
         offset += Vstep;
         if (EditorGUI.EndChangeCheck())
         {
@@ -202,6 +94,7 @@ public class ConditionContDrawer : PropertyDrawer
                     break;
             }
         }
+        condition.holder = (Role)EditorGUI.EnumPopup(GetNextRectangle(position, ref offset), new GUIContent("Holder") , condition.holder);
         switch (((OpinionCondition)list[i]).opinionType)
         {
             case OpinionType.trait:
@@ -218,31 +111,31 @@ public class ConditionContDrawer : PropertyDrawer
     private void RelationshipOpinionCondDraw(List<NewCondition> list, int i, ref float offset, Rect position)
     {
         RelationshipOpinionCondition condition = (RelationshipOpinionCondition)list[i];
-        condition.relationship = (RelationshipType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.relationship);
+        condition.relationship = (RelationshipType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("relationship Type"), condition.relationship);
         offset += Vstep;
-        condition.holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.holder);
+        condition.RelationshipHolder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("relationship holder") ,condition.RelationshipHolder);
         offset += Vstep;
-        condition.RelationShipRecipient = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.RelationShipRecipient);
+        condition.RelationShipRecipient = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("relationship recipient"), condition.RelationShipRecipient);
         offset += Vstep;
-        condition.RelationshipStatus = EditorGUI.Toggle(new Rect(position.x, position.y + offset, position.width, height), condition.RelationshipStatus);
+        condition.RelationshipStatus = EditorGUI.Toggle(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("status") ,condition.RelationshipStatus);
         offset += Vstep;
     }
 
     private void TraitOpinnionCondDraw(List<NewCondition> list, int i, ref float offset, Rect position)
     {
         TraitOpinionCondition condition = (TraitOpinionCondition)list[i];
-        condition.holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.holder);
+        condition.TraitHolder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height),new GUIContent("Trait holder"), condition.TraitHolder);
         offset += Vstep;
-        condition.trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.trait);
+        condition.trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Trait"), condition.trait);
         offset += Vstep;
         EditorGUI.BeginChangeCheck();
-        condition.OpinionOperator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.OpinionOperator);
+        condition.OpinionOperator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Opinion Operator"), condition.OpinionOperator);
         offset += Vstep;
         if (EditorGUI.EndChangeCheck())
         {
             if(condition.OpinionOperator == ValueComparisonOperator.Equals)
             {
-                condition.tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), condition.tolerance);
+                condition.tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Tolerance"), condition.tolerance);
                 offset += Vstep;
             }
         }
@@ -252,13 +145,13 @@ public class ConditionContDrawer : PropertyDrawer
     {
         RelationshipCondition condition = (RelationshipCondition)list[i];
 
-        condition.relationship = (RelationshipType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.relationship);
+        condition.relationship = (RelationshipType)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Relationship"), condition.relationship);
         offset += Vstep;
-        condition.holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.holder);
+        condition.holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Holder"), condition.holder);
         offset += Vstep; 
-        condition.recipient = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition.recipient);
+        condition.recipient = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Recipient"), condition.recipient);
         offset += Vstep;
-        condition.relationshipStatus = EditorGUI.Toggle(new Rect(position.x, position.y + offset, position.width, height), condition.relationshipStatus);
+        condition.relationshipStatus = EditorGUI.Toggle(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Status"), condition.relationshipStatus);
         offset += Vstep;
     }
 
@@ -266,17 +159,17 @@ public class ConditionContDrawer : PropertyDrawer
     {
         TraitCondition condition = (TraitCondition)list[i];
         
-        condition._trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width,height),condition._trait);
+        condition._trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width,height), new GUIContent("Trait"), condition._trait);
         offset += Vstep;
-        condition._holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition._holder);
+        condition._holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Holder"), condition._holder);
         offset += Vstep;
-        condition._value = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), condition._value);
+        condition._value = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Value"), condition._value);
         offset += Vstep;
-        condition._operator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), condition._operator);
+        condition._operator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Operator"), condition._operator);
         offset += Vstep;
         if(condition._operator == ValueComparisonOperator.Equals)
         {
-            condition.tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), condition.tolerance);
+            condition.tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, height), new GUIContent("Tolerance"), condition.tolerance);
             offset += Vstep;
         }
     }
@@ -295,8 +188,55 @@ public class ConditionContDrawer : PropertyDrawer
                 throw new NotImplementedException();
         }
     }
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)//next issue to solve
     {
-        return base.GetPropertyHeight(property, label);
+        ConditionContainer cont = (ConditionContainer)EditorHelper.GetTargetObjectOfProperty(property);
+        var height = Vstep;// label
+        foreach (var condition in cont.conditions)
+        {
+            height += Vstep;//individual labels
+            switch (condition._type)
+            {
+                case ConditionType.trait:
+                    height += Vstep * 4.0f;//trait,holder,value,operator
+                    if (((TraitCondition)condition)._operator == ValueComparisonOperator.Equals) height += Vstep;//tolerance
+                    
+                    break;
+                case ConditionType.relationship:
+                    height += Vstep * 4.0f;//holder,recipient,relationshiptype,status
+                    break;
+                case ConditionType.opinion:
+                    height += Vstep * 2.0f;//holder, opiniontype
+                    switch (((OpinionCondition)condition).opinionType)
+                    {
+                        case OpinionType.trait:
+                            height += Vstep * 4.0f;//trait, traitHolder,value,operator
+                            if (((TraitOpinionCondition)condition).OpinionOperator == ValueComparisonOperator.Equals) height += Vstep;//tolerance
+                            break;
+                        case OpinionType.relationship:
+                            height += Vstep * 4.0f;//relationship,relationshipHolder, relationship recipient,status
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            height += Vstep;//remove button
+            height += EditorGUIUtility.singleLineHeight;//cumulative offset from stacked objects ?
+        } 
+        
+        
+        
+        height += Vstep; //add button
+        return height;
+    }
+
+    private Rect GetNextRectangle(Rect position, ref float offset)
+    {
+        var result = new Rect(position.x, position.y + offset , position.width, EditorGUIUtility.singleLineHeight);
+        offset += Vstep;
+        return result;
     }
 }

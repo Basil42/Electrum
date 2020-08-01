@@ -208,36 +208,7 @@ public class TraitCondition : NewCondition
                 throw new NotImplementedException(); //using this exception because we don't need much extra info.
         }
     }
-    //public override void OnGUI(Rect position, TraitCondition condition)
-    //{
-    //    float offset = EditorGUIUtility.singleLineHeight;
-    //    EditorGUI.BeginChangeCheck();
-    //    Trait trait = (Trait)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._trait);
-    //    offset += EditorGUIUtility.singleLineHeight;
-    //    Role holder = (Role)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._holder);
-    //    offset += EditorGUIUtility.singleLineHeight;
-    //    float value = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._value);
-    //    offset += EditorGUIUtility.singleLineHeight;
-    //    ValueComparisonOperator Operator = (ValueComparisonOperator)EditorGUI.EnumPopup(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition._operator);
-    //    if (EditorGUI.EndChangeCheck())
-    //    {
-    //        condition._trait = trait;
-    //        condition._holder = holder;
-    //        condition._value = value;
-    //        condition._operator = Operator;
-    //    }
-    //    if (condition._operator == ValueComparisonOperator.Equals)
-    //    {
-    //        offset += EditorGUIUtility.singleLineHeight;
-    //        EditorGUI.BeginChangeCheck();
-    //        float tolerance = EditorGUI.FloatField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), condition.tolerance);
-    //        if (EditorGUI.EndChangeCheck())
-    //        {
-    //            condition.tolerance = tolerance;
-    //        }
-    //
-    //    }
-    //}
+    
 }
 [Serializable]
 public class RelationshipCondition : NewCondition
@@ -281,26 +252,7 @@ public abstract class OpinionCondition : NewCondition
     {
         _type = ConditionType.opinion;
     }
-    //public override void OnGUI(Rect position, OpinionCondition condition)
-    //{
-    //    
-    //    EditorGUI.BeginChangeCheck();
-    //    OpinionType opinionTypeSelected = (OpinionType)EditorGUI.EnumPopup(new Rect(position.x, position.y + (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 4.0f/*unsure*/, position.width, EditorGUIUtility.singleLineHeight), condition.opinionType);
-    //    if (EditorGUI.EndChangeCheck() && opinionTypeSelected != condition.opinionType)
-    //    {
-    //        switch (opinionTypeSelected)
-    //        {
-    //            case OpinionType.trait:
-    //                property.managedReferenceValue = new TraitOpinionCondition();
-    //                break;
-    //            case OpinionType.relationship:
-    //                property.managedReferenceValue = new RelationshipOpinionCondition();
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
-    //}
+    
 }
 [Serializable]
 public class TraitOpinionCondition : OpinionCondition
@@ -397,8 +349,8 @@ public class RelationshipOpinionCondition : OpinionCondition
 public class ConditionContainer : ISerializationCallbackReceiver
 {
     [NonSerialized]public List<NewCondition> conditions = new List<NewCondition>();//hopefully the serialisation of this doesn't interfere(it did)
-    [HideInInspector] List<string> conditionData = new List<string>();
-    [HideInInspector] List<string> conditionTypes = new List<string>();
+    [HideInInspector]public List<string> conditionData = new List<string>();
+    [HideInInspector]public List<string> conditionTypes = new List<string>();
     
 
     public void OnAfterDeserialize()
@@ -408,6 +360,7 @@ public class ConditionContainer : ISerializationCallbackReceiver
         {
             conditions.Add((NewCondition)JsonUtility.FromJson(conditionData[i], Type.GetType(conditionTypes[i])));
         }
+        
     }
 
     public void OnBeforeSerialize()
@@ -420,6 +373,7 @@ public class ConditionContainer : ISerializationCallbackReceiver
             conditionTypes.Add(condition.GetType().ToString());
             conditionData.Add(JsonUtility.ToJson(condition, false));
         }
+        
     }
 }
 

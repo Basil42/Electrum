@@ -43,26 +43,16 @@ MonoBehaviour:
     Mandatory: 1
     holder: {fileID: 0}
     conditions:
-    - type: 0
-      holder: 1
-      recipient: 2
-      trait: 0
-      Operator: 0
-      tolerance: 0
-      value: 0
-      relationshipType: 0
-      BoolValue: 0
+      conditionData:
+      - '{"_type":0,"_trait":2,"_holder":2,"_value":0.20000000298023225,"_operator":1,"tolerance":0.0}'
+      - '{"_type":1,"relationship":1,"holder":1,"recipient":2,"relationshipStatus":true}'
+      conditionTypes:
+      - TraitCondition
+      - RelationshipCondition
     DesirabilityRules:
     - conditions:
-      - type: 0
-        holder: 1
-        recipient: 2
-        trait: 0
-        Operator: 0
-        tolerance: 0
-        value: 0
-        relationshipType: 3
-        BoolValue: 1
+        conditionData: []
+        conditionTypes: []
       baseInfluence: 1.4
       Modifiers:
       - trait: 2
@@ -92,5 +82,13 @@ MonoBehaviour:
           m_PostInfinity: 2
           m_RotationOrder: 0
     LikelyhoodRules: []
-  EngineControlledRoles: []
+  EngineControlledRoles:
+  - role: 0
+    Mandatory: 0
+    holder: {fileID: 0}
+    conditions:
+      conditionData: []
+      conditionTypes: []
+    DesirabilityRules: []
+    LikelyhoodRules: []
   effects: []
