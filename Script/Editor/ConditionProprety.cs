@@ -18,10 +18,10 @@ public class ConditionContDrawer : PropertyDrawer
         ConditionContainer cont = (ConditionContainer)EditorHelper.GetTargetObjectOfProperty(property);
         var list = cont.conditions;
         float offset = 0.0f;
-        label.text = "Conditions";
+        
        
         var WrapperLabel = EditorGUI.BeginProperty(position, label, property);
-        EditorGUI.LabelField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), new GUIContent("Conditions"));
+        EditorGUI.LabelField(new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight), label);
        
         offset += Vstep;
         

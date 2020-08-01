@@ -80,37 +80,16 @@ MonoBehaviour:
     - relationships: 0600000007000000
     - relationships: 01000000
   m_goals:
-  - importance: 0
-    targetConditions: []
-    DiscardConditions: []
+  - importance: 1.2
+    targetConditions:
+      conditionData:
+      - '{"_type":1,"relationship":2,"holder":2,"recipient":1,"relationshipStatus":true}'
+      conditionTypes:
+      - RelationshipCondition
+    DiscardConditions:
+      conditionData: []
+      conditionTypes: []
     involvedCharacter:
-      reorderableList:
-        canAdd: 1
-        canRemove: 1
-        draggable: 1
-        expandable: 1
-        multipleSelection: 1
-        isExpanded: 0
-        label:
-          m_Text: Keys
-          m_Image: {fileID: 0}
-          m_Tooltip: 
-        headerHeight: 18
-        footerHeight: 13
-        slideEasing: 0.15
-        verticalSpacing: 2
-        showDefaultBackground: 1
-        elementDisplayType: 0
-        elementNameProperty: 
-        elementNameOverride: 
-        elementIcon: {fileID: 0}
-      reqReferences: {fileID: 0}
-      isExpanded: 0
-      _keyValues: 
-      _keys: 
-      _values: []
-  worldModel:
-    Characters:
       reorderableList:
         canAdd: 1
         canRemove: 1
@@ -131,8 +110,37 @@ MonoBehaviour:
         elementNameProperty: 
         elementNameOverride: 
         elementIcon: {fileID: 0}
-      reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60, type: 2}
+      reqReferences: {fileID: 0}
       isExpanded: 1
+      _keyValues: 0100000002000000
+      _keys: 0100000002000000
+      _values:
+      - {fileID: 11400000}
+      - {fileID: 11400000, guid: 81cefb685f1ea0345856eed6dc1a570b, type: 2}
+  worldModel:
+    Characters:
+      reorderableList:
+        canAdd: 1
+        canRemove: 1
+        draggable: 1
+        expandable: 1
+        multipleSelection: 1
+        isExpanded: 0
+        label:
+          m_Text: Keys
+          m_Image: {fileID: 0}
+          m_Tooltip: 
+        headerHeight: 18
+        footerHeight: 13
+        slideEasing: 0.15
+        verticalSpacing: 2
+        showDefaultBackground: 1
+        elementDisplayType: 0
+        elementNameProperty: 
+        elementNameOverride: 
+        elementIcon: {fileID: 0}
+      reqReferences: {fileID: 11400000, guid: 3d6785e46e940b843aa5fbe4ca729d60, type: 2}
+      isExpanded: 0
       _keyValues:
       - {fileID: 11400000}
       - {fileID: 11400000, guid: e0961358632960149afbd83416a5f4a2, type: 2}
@@ -430,20 +438,39 @@ MonoBehaviour:
           _keys:
           - {fileID: 11400000, guid: daa6beb40cd549d459b02b4ff24885ed, type: 2}
           _values:
-          - traits: 
+          - traits:
+              reorderableList:
+                canAdd: 1
+                canRemove: 1
+                draggable: 1
+                expandable: 1
+                multipleSelection: 1
+                isExpanded: 0
+                label:
+                  m_Text: Keys
+                  m_Tooltip: 
+                headerHeight: 18
+                footerHeight: 13
+                slideEasing: 0.15
+                verticalSpacing: 2
+                showDefaultBackground: 1
+                elementDisplayType: 0
+                elementNameProperty: 
+                elementNameOverride: 
+                elementIcon: {fileID: 0}
+              reqReferences: {fileID: 0}
+              isExpanded: 0
+              _keyValues: 
+              _keys: 
+              _values: []
             goals:
             - importance: 0
               targetConditions:
-              - type: 0
-                holder: 0
-                recipient: 0
-                trait: 0
-                Operator: 0
-                tolerance: 0
-                value: 0
-                relationshipType: 0
-                BoolValue: 0
-              DiscardConditions: []
+                conditionData: []
+                conditionTypes: []
+              DiscardConditions:
+                conditionData: []
+                conditionTypes: []
               involvedCharacter:
                 reorderableList:
                   canAdd: 1
@@ -466,6 +493,31 @@ MonoBehaviour:
                 _keys: 01000000
                 _values:
                 - {fileID: 11400000, guid: daa6beb40cd549d459b02b4ff24885ed, type: 2}
+            relationships:
+              reorderableList:
+                canAdd: 1
+                canRemove: 1
+                draggable: 1
+                expandable: 1
+                multipleSelection: 1
+                isExpanded: 0
+                label:
+                  m_Text: Keys
+                  m_Tooltip: 
+                headerHeight: 18
+                footerHeight: 13
+                slideEasing: 0.15
+                verticalSpacing: 2
+                showDefaultBackground: 1
+                elementDisplayType: 0
+                elementNameProperty: 
+                elementNameOverride: 
+                elementIcon: {fileID: 0}
+              reqReferences: {fileID: 0}
+              isExpanded: 0
+              _keyValues: []
+              _keys: []
+              _values: []
       - Character: {fileID: 11400000, guid: ac310181943c72b4c9304444a83dc3af, type: 2}
         traits:
           reorderableList:
