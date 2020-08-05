@@ -9,105 +9,7 @@ using System.Runtime.Serialization;
 using UnityEditor.AI;
 using UnityEditor.Experimental.TerrainAPI;
 
-[Serializable]
-public class Condition//used to check if a condition is fullfilled, can be evaluated in the "real" world state, a character world state or a virtual worldstate used for decision making
-{
-    /*TODO: see if a custom inspector will work with the serialisation to make the inspector cleaner and more usable (possibly having inheritence on condition s too)*/
-    //See custom propriety drawer
-    public InfoType type = InfoType.relationship; //type of information, for example a relation;
-    public Role holder;//initially a list, but created complications. having multiple conditions should take care of most cases, but we might want to have more complex conditions later on.
-    public Role recipient;//should be empty if the info is a trait
-    [Header("traits only")]
-    public Trait trait;
-    public ValueComparisonOperator Operator = ValueComparisonOperator.Equals;
-    [Tooltip("only for the equal operator, define how much more or less the provided value can be compared to the condition value to pass the check.")]
-    public float tolerance = 0.1f;
-    public float value = 0.0f;
-    [Header("relationship only")]
-    public RelationshipType relationshipType;
-    public bool BoolValue;
-    //add values for goals and opinions here, vastly more complicated
-    [Header("opinion only")]
-    OpinionType opinionType;
 
-    internal bool isMet(ActionInstance instance, WorldModel worldModel)//indicate if the condition is met in the perspective of the character holding this worldmodel uses
-    {
-        CharModel holderModel;
-        if (!worldModel.Characters.TryGetValue(instance.InvolvedCharacters[holder], out holderModel)) return false;//sometimes unbound roles will be checked against in influencerules, but it might hide poorly configured condition order
-        CharModel recipientModel;
-        if (!worldModel.Characters.TryGetValue(instance.InvolvedCharacters[recipient], out recipientModel) && type == InfoType.relationship) return false;
-        switch (type)
-        {
-            case InfoType.relationship:
-                if (!holderModel.Relationships.ContainsKey(recipientModel.Character))
-                {
-                    return !BoolValue;
-
-                }
-                return BoolValue == holderModel.Relationships[recipientModel.Character].relationships.Exists(x => x == relationshipType);
-            case InfoType.trait:
-                float TraitValue;
-                if (!holderModel.traits.TryGetValue(trait, out TraitValue)) return Operator == ValueComparisonOperator.lessThan;
-                switch (Operator)
-                {
-                    case ValueComparisonOperator.lessThan:
-                        return TraitValue < value;
-                    case ValueComparisonOperator.MoreThan:
-                        return TraitValue > value;
-                    case ValueComparisonOperator.Equals:
-                        return (TraitValue < value - tolerance && TraitValue > value + tolerance);//not very elegant, you usually would rather use two conditions anyway.
-                    default:
-                        Debug.LogError("Attempting to use an unimplented operator: " + Operator.ToString());
-                        return false;
-                }
-            case InfoType.opinion:
-                Debug.LogError("Warning, do not use conditions involving opinions that will be evaluated from the POV of a character.\n Used in action: " + instance.Template.name);
-                return false;
-            default:
-                Debug.LogError("unimplemented Information type while checking if a condition was met. Type : " + type.ToString());
-                return false;
-        }
-    }
-    internal bool isMet(ActionInstance instance)//check if this action meets the condition in the "real world", to do
-    {
-        throw new NotImplementedException();
-    }
-    internal float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacter)//negative results indicates the condition is fullfilled in this world state, this is a character evaluation
-    {
-        switch (type)
-        {
-            case InfoType.relationship:
-                throw new NotImplementedException();//will require reference to "trigger rules". Make it so it targets the most imediate path towards that relationship (more advanced heuristics might be desirable later)
-            case InfoType.trait:
-                CharModel characterModel;
-                float traitValue;
-                if (!worldModel.Characters.TryGetValue(involvedCharacter[holder], out characterModel) || !characterModel.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;// assume middling trait in the absence of information, I'm thinking of having a sort of "reputation" object that provides default assumption about a character.
-                switch (Operator)
-                {
-                    case ValueComparisonOperator.lessThan:
-                        return traitValue - value;
-                    case ValueComparisonOperator.MoreThan:
-                        return value - traitValue;
-                    case ValueComparisonOperator.Equals:
-                        return Mathf.Abs(value - traitValue);
-                    default:
-                        break;
-                }
-                break;
-            case InfoType.opinion:
-                if (recipient == Role.none) 
-                {
-                    Debug.LogError("Opinion condition has undefined recipient. Aborting distance evaluation");
-                    //add proper exeption handling
-                }
-                throw new NotImplementedException();
-            default:
-                break;
-        }
-        throw new NotImplementedException();
-    }
-   
-}
 public enum ConditionType
 {
     trait,
@@ -119,7 +21,7 @@ public enum ConditionType
 public abstract class NewCondition
 {
     [SerializeField]public  ConditionType _type;
-    //there will pretty much always be a holder, but it might not always be the case so it will be reimplemented in each inherited class.
+    //there will always be a holder in the current conditions, but it might not always be the case so it will be reimplemented in each inherited class.
     internal abstract bool isMet(Dictionary<Role,Character> involvedCharacters, WorldModel worldModel);
     internal abstract bool isCurrentlyMet(Dictionary<Role,Character> involvedCharacters);//check if the condition is "really" met
     internal abstract float getDistance(WorldModel worldModel, Dictionary<Role,Character> involvedCharacters);//negative results indicate the condition is fullfilled;
@@ -186,7 +88,26 @@ public class TraitCondition : NewCondition
 
     internal override bool isCurrentlyMet(Dictionary<Role,Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character holderRef = involvedCharacters[_holder];
+        if (!involvedCharacters.TryGetValue(_holder, out holderRef))
+        {
+            Debug.Log("evaluated a condition with unassigned role");
+            return false;//role wasn't assigned to a character, probably a sign that something is amiss
+        }
+        float traitValue;
+        if (!holderRef.m_traits.TryGetValue(_trait, out traitValue)) return false;//character does not have the specified trait, this is a potential expected behavior(we could populate unspecified trait values with default ones
+        switch (_operator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return (traitValue < _value);
+            case ValueComparisonOperator.MoreThan:
+                return traitValue > _value;
+            case ValueComparisonOperator.Equals:
+                return (traitValue <_value + tolerance) && (traitValue > _value - tolerance);
+            default:
+                Debug.LogError("Invalid comparaison operator used in distance estimation to Trait condition. Trait: " + _operator.ToString());
+                throw new NotImplementedException(); //using this exception because we don't need much extra info.
+        }
     }
 
     internal override bool isMet(Dictionary<Role,Character> involvedCharacters, WorldModel worldModel)
@@ -224,7 +145,7 @@ public class RelationshipCondition : NewCondition
     }
     internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException();//only way I see to compute this is to find a trigger rule that results in this relationship (which is sort of equivalent to an opinion condition)
     }
 
     internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
@@ -269,26 +190,160 @@ public class TraitOpinionCondition : OpinionCondition
     }
     internal override float getCurrentDistance(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character OpinionHolderChar;
+        if (!involvedCharacters.TryGetValue(holder, out OpinionHolderChar))
+        {
+            Debug.LogWarning("trying to evaluate a condition about an unbound role.");//could happen on non mandatory roles
+            return 5000.0f;
+        }
+        Character TraitHolderChar;
+        CharModel TraitholderModel;
+        if(!involvedCharacters.TryGetValue(TraitHolder, out TraitHolderChar))
+        {
+            Debug.LogWarning("Trying to evaluate a condition about an unbound role.");//could also happen
+            return 5000.0f;
+        }
+        float traitValue;
+        if(!OpinionHolderChar.worldModel.Characters.TryGetValue(TraitHolderChar, out TraitholderModel))
+        {
+            //opinion holder isn't aware of this character. Assume average value
+            traitValue = 0.5f;
+        }
+        else
+        {
+            if (!TraitholderModel.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;//assume average value if no particular opinion is held.
+        }
+        switch (OpinionOperator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue - value;
+            case ValueComparisonOperator.MoreThan:
+                return value - traitValue;
+            case ValueComparisonOperator.Equals:
+                return Mathf.Abs(value - traitValue);
+            default:
+                Debug.LogError("invalid operator on traitOpinionCondition: " + OpinionOperator.ToString());
+                throw new NotImplementedException();
+        }
     }
 
     internal override float getDistance(WorldModel worldModel, Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character holderChar;//holder of the opinion
+        if (!involvedCharacters.TryGetValue(holder, out holderChar))
+        {
+            Debug.LogWarning("Trying to evaluate an opinion of an unbound role");
+            return 5000.0f;//the role is unassigned, couldn't find the opinion holder, not sure if it should result in arbitrary distance or 0
+        }
+        CharModel charModel;
+        float traitValue;
+        if (!worldModel.Characters.TryGetValue(holderChar, out charModel)) traitValue = 0.5f;//the character doesn't have a model of the other character
+        else
+        {
+            Character TraitHolderChar;//subject of the opinion
+            if (!involvedCharacters.TryGetValue(TraitHolder, out TraitHolderChar))
+            {
+                traitValue = 0.5f;//Opinion targeted an unbound Role, possibly a sign that something is wrong.
+                Debug.LogWarning("Trying to access a character's opinion of an unbound role");
+            }
+            OpinionModel opinion;
+            if (!charModel.opinions.TryGetValue(TraitHolderChar, out opinion)) traitValue = 0.5f;//the opinion holder has no opinions about the target.
+            else if (!opinion.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;//the opinion holder doesn't have an opinion on this specific trait
+            
+        }
+        switch (OpinionOperator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue - value;
+            case ValueComparisonOperator.MoreThan:
+                return value - traitValue;
+            case ValueComparisonOperator.Equals:
+                return Mathf.Abs(traitValue - value);
+            default:
+                Debug.LogError("Unimplemented opinion operator :" + OpinionOperator.ToString());
+                throw new NotImplementedException();
+        }
     }
 
     internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character OpinionHolderChar;
+        if (!involvedCharacters.TryGetValue(holder, out OpinionHolderChar))
+        {
+            Debug.LogWarning("trying to evaluate a condition about an unbound role.");//could happen on non mandatory roles
+            return false;
+        }
+        Character TraitHolderChar;
+        CharModel TraitholderModel;
+        if (!involvedCharacters.TryGetValue(TraitHolder, out TraitHolderChar))
+        {
+            Debug.LogWarning("Trying to evaluate a condition about an unbound role.");//could also happen
+            return false;
+        }
+        float traitValue;
+        if (!OpinionHolderChar.worldModel.Characters.TryGetValue(TraitHolderChar, out TraitholderModel))
+        {
+            //opinion holder isn't aware of this character. Assume average value
+            traitValue = 0.5f;
+        }
+        else
+        {
+            if (!TraitholderModel.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;//assume average value if no particular opinion is held.
+        }
+        switch (OpinionOperator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue < value;
+            case ValueComparisonOperator.MoreThan:
+                return value > traitValue;
+            case ValueComparisonOperator.Equals:
+                return traitValue < value+tolerance && traitValue > value - tolerance;
+            default:
+                Debug.LogError("invalid operator on traitOpinionCondition: " + OpinionOperator.ToString());
+                throw new NotImplementedException();
+        }
     }
 
     internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
     {
-        throw new NotImplementedException();
+        Character holderChar;//holder of the opinion
+        if (!involvedCharacters.TryGetValue(holder, out holderChar))
+        {
+            Debug.LogWarning("Trying to evaluate an opinion of an unbound role");
+            return false;//the role is unassigned, couldn't find the opinion holder, not sure if it should result in arbitrary distance or 0
+        }
+        CharModel charModel;
+        float traitValue;
+        if (!worldModel.Characters.TryGetValue(holderChar, out charModel)) traitValue = 0.5f;//the character doesn't have a model of the other character, assume average
+        else
+        {
+            Character TraitHolderChar;//subject of the opinion
+            if (!involvedCharacters.TryGetValue(TraitHolder, out TraitHolderChar))
+            {
+                traitValue = 0.5f;//Opinion targeted an unbound Role, possibly a sign that something is wrong.
+                Debug.LogWarning("Trying to access a character's opinion of an unbound role");
+            }
+            OpinionModel opinion;
+            if (!charModel.opinions.TryGetValue(TraitHolderChar, out opinion)) traitValue = 0.5f;//the opinion holder has no opinions about the target.
+            else if (!opinion.traits.TryGetValue(trait, out traitValue)) traitValue = 0.5f;//the opinion holder doesn't have an opinion on this specific trait
+
+        }
+        switch (OpinionOperator)
+        {
+            case ValueComparisonOperator.lessThan:
+                return traitValue < value;
+            case ValueComparisonOperator.MoreThan:
+                return value < traitValue;
+            case ValueComparisonOperator.Equals:
+                return traitValue < value + tolerance && traitValue > value - tolerance;
+            default:
+                Debug.LogError("Unimplemented opinion operator :" + OpinionOperator.ToString());
+                throw new NotImplementedException();
+        }
     }
 }
 [Serializable]
-public class RelationshipOpinionCondition : OpinionCondition
+public class RelationshipOpinionCondition : OpinionCondition //similar to the relationship condition, it's currently impossible to evaluate distances to relationship without some kind a rule triggering them
 {
     [SerializeField] public RelationshipType relationship;
     [SerializeField] public Role RelationshipHolder;
@@ -311,12 +366,46 @@ public class RelationshipOpinionCondition : OpinionCondition
 
     internal override bool isCurrentlyMet(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character opinionHolderChar;
+        if (!involvedCharacters.TryGetValue(holder, out opinionHolderChar))
+        {
+            Debug.LogWarning("trying to evaluate a relationshipOpinion condition about an unbound role");
+            return false;
+        }
+        Character OpinionRelationshipHolder;
+        if(!involvedCharacters.TryGetValue(RelationshipHolder, out OpinionRelationshipHolder))
+        {
+            Debug.LogWarning("Unbound role in relationship opinion condition : " + RelationshipHolder.ToString());
+            return false;
+        }
+        Character OpinionRelationshipRecipient;
+        if(!involvedCharacters.TryGetValue(RelationShipRecipient, out OpinionRelationshipRecipient))
+        {
+            Debug.LogWarning("Unbound role in relationship opinion condition : " + RelationShipRecipient.ToString());
+            return false;
+        }
+        CharModel RelationshipHolderModel;
+        if(!opinionHolderChar.worldModel.Characters.TryGetValue(OpinionRelationshipHolder,out RelationshipHolderModel)) return false;
+        RelationshipArray relationshipArray;
+        if (!RelationshipHolderModel.Relationships.TryGetValue(OpinionRelationshipRecipient, out relationshipArray)) return false;
+        bool Status = relationshipArray.relationships.Contains(relationship);
+        /*Having relationship be boolean status turned out to be a bad idea I think. I'll refactor it if it seems like it will save a lot of time(It likely will)*/
+        return RelationshipStatus == Status;
     }
 
     internal override bool isMet(Dictionary<Role, Character> involvedCharacters, WorldModel worldModel)
     {
-        throw new NotImplementedException();
+        Character OpinionHolderChar;
+        CharModel OpinionHolderModel;
+        if (!involvedCharacters.TryGetValue(holder, out OpinionHolderChar)) return false;//probably a sign that something is wrong
+        if (!worldModel.Characters.TryGetValue(OpinionHolderChar, out OpinionHolderModel)) return false;
+        Character RelationHolderChar;
+        OpinionModel opinion;
+        if (!involvedCharacters.TryGetValue(RelationshipHolder, out RelationHolderChar)) return false; //unbound role, might be bad
+        if (!OpinionHolderModel.opinions.TryGetValue(RelationHolderChar, out opinion)) return false; //no opinion found
+        RelationshipArray relationArray;
+        if (!opinion.relationships.TryGetValue(RelationHolderChar, out relationArray)) return false;// no known relationship opinion, again, assuming absence of relationship as the default;
+        return relationArray.relationships.Contains(relationship) == RelationshipStatus;
     }
 }
 //[Serializable]
