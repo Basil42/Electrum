@@ -28,12 +28,56 @@ public class influenceRule
 }
 
 [Serializable]
-public class influenceMod//might accept other type of information than traits, but I don't see a use case not covered by conditions
+public class influenceMod//The nested implentation is for dancing around the inspector limitations. Might trigger the serialization depth issue again.
+{
+    
+    public modValueSource source;//should be hidden away by the custom inspector
+    public AnimationCurve curve;//curve of the influence this value generate
+
+    internal float Evaluate(WorldModel model, Dictionary<Role, Character> involvedCharacters)
+    {
+        var value =  source.EvaluateValue(model, involvedCharacters);
+        if (value < 0.0f) return 1.0f;//this a fallback to handle bad bidings;
+        return curve.Evaluate(value);
+    }
+}
+
+public abstract class modValueSource
+{
+    internal abstract float EvaluateValue(WorldModel model, Dictionary<Role, Character> involvedCharacters);
+    internal abstract float GetActualValue(Dictionary<Role, Character> involvedCharacters);
+}
+public class TraitModValueSource : modValueSource
 {
     public Trait trait;
     public Role holder = Role.allInvolved;
+    internal override float EvaluateValue(WorldModel model, Dictionary<Role, Character> involvedCharacters)
+    {
+        Character holderChar;
+        if (!involvedCharacters.TryGetValue(holder, out holderChar)) return -1.0f;
+        CharModel charModel;
+        if (!model.Characters.TryGetValue(holderChar, out charModel)) return 0.5f;//assume average
+        float traitValue;
+        if (!charModel.traits.TryGetValue(trait, out traitValue)) return 0.5f;//assume average
+        return traitValue;
+    }
 
-    public AnimationCurve curve;//curve of the influence this value generate
+    internal override float GetActualValue(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
+}
+public class OpinionTraitModSource : modValueSource
+{
+    public Role OpinionHolder;
+    public Role TraitHolder;
+    internal override float EvaluateValue(WorldModel model, Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
 
-
+    internal override float GetActualValue(Dictionary<Role, Character> involvedCharacters)
+    {
+        throw new NotImplementedException();
+    }
 }

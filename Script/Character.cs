@@ -52,7 +52,7 @@ public class Character : ScriptableObject
             for (int i = 0; i < ActionCandidates.Count; )
             {
                 ActionInstance instance = ActionCandidates[i];
-                if (!EstimateBindingsQuality(instance, worldModel))
+                if (!EstimateBindingsQuality(instance, worldModel))//evaluate utility
                 {
                     Debug.Log("instance removed with affinity " + instance.Affinity);
                     ActionCandidates.Remove(instance);//bindings are expected to be too bad to consider taking the action 
@@ -66,6 +66,7 @@ public class Character : ScriptableObject
             }
             finalActions.AddRange(ActionCandidates);
         }
+        
         finalActions.Sort((x, y) => x.ExpectedImmediateUtility.CompareTo(y.ExpectedImmediateUtility));
         foreach (var instance in finalActions)
         {
