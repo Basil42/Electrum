@@ -14,7 +14,7 @@ public class TraitValueDictionary : SerializableDictionaryBase<Trait, float> { }
 [Serializable]
 public class RelationshipArray//this class only serve to go around a quirk of unity serialization interaction with the serialized dictionaries
 {
-    public List<RelationshipType> relationships;
+    public List<RelationshipType> relationships = new List<RelationshipType>();
 }
 [Serializable]
 public class RelationShipDictionary : SerializableDictionaryBase<Character, RelationshipArray> { }

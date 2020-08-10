@@ -14,14 +14,19 @@ public class influenceRule
 
     internal float getAffinityMod(ActionInstance actionInstance)
     {
-        float AffinityMod = baseInfluence;
         var ActorWorldModel = actionInstance.InvolvedCharacters[Role.actor].worldModel;
-        foreach (var condition in conditions.conditions) if (!condition.isMet(actionInstance.InvolvedCharacters, ActorWorldModel)) return 1.0f;//It might be good to put this value in the hands of the user, but the UI is busy enough as it is. Good once/if we have custom editors.
+        return getAffinityMod(ActorWorldModel, actionInstance.InvolvedCharacters);
+        
+    }
+    internal float getAffinityMod(WorldModel model,Dictionary<Role,Character> involvedCharacters)
+    {
+        float AffinityMod = baseInfluence;
+        foreach (var condition in conditions.conditions) if (!condition.isMet(involvedCharacters, model)) return 1.0f;
         foreach (var mod in Modifiers)
         {
-            float traitValue;
-            if (!ActorWorldModel.Characters[actionInstance.InvolvedCharacters[mod.holder]].traits.TryGetValue(mod.trait, out traitValue)) continue;
-            AffinityMod *= mod.curve.Evaluate(traitValue);
+            float modValue = mod.Evaluate(model,involvedCharacters);
+            if (modValue < 0.0f) continue;//just for safety, in case the curves output bad data
+            AffinityMod *= modValue;
         }
         return AffinityMod;
     }
@@ -32,7 +37,7 @@ public class influenceMod//The nested implentation is for dancing around the ins
 {
     
     public modValueSource source;//should be hidden away by the custom inspector
-    public AnimationCurve curve;//curve of the influence this value generate
+    [SerializeField]private AnimationCurve curve;//curve of the influence this value generate
 
     internal float Evaluate(WorldModel model, Dictionary<Role, Character> involvedCharacters)
     {
