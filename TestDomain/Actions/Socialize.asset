@@ -55,9 +55,7 @@ MonoBehaviour:
         conditionTypes: []
       baseInfluence: 1.4
       Modifiers:
-      - trait: 2
-        holder: 2
-        curve:
+      - curve:
           serializedVersion: 2
           m_Curve:
           - serializedVersion: 3
@@ -91,4 +89,24 @@ MonoBehaviour:
       conditionTypes: []
     DesirabilityRules: []
     LikelyhoodRules: []
-  effects: []
+  effects:
+  - effects:
+    - type: 2
+      effectType: TraitOpinionEffect
+      JsonEffect: '{"OpinionHolder":0,"opinionType":0,"TraitHolder":0,"trait":0,"traitValue":0.0,"Operator":0}'
+      AllWitnesses: 0
+      Witnesses: 
+    - type: 1
+      effectType: TraitEffect
+      JsonEffect: '{"Holder":0,"trait":0,"value":0.0,"Operator":0}'
+      AllWitnesses: 0
+      Witnesses: 
+    conditions:
+      conditionData: []
+      conditionTypes: []
+    influenceRules:
+    - conditions:
+        conditionData: []
+        conditionTypes: []
+      baseInfluence: 0
+      Modifiers: []

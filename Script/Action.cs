@@ -8,6 +8,7 @@ using System.Reflection;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
+using UnityEngine.Timeline;
 
 [Serializable]
 public class AffinityDictionary : SerializableDictionaryBase<Trait, AnimationCurve> { }
@@ -101,9 +102,9 @@ public class ActionInstance
 [Serializable]
 public class ActionEffect
 {
-    public List<EffectInstance> effects;
-    public ConditionContainer conditions;//condition that must be met for the effect to be applied, allow for more nuance with smaller authoring overhead, condition is marked unmet if it refers to an unbound role
-    public List<influenceRule> influenceRules;
+    public List<EffectInstance> effects = new List<EffectInstance>();
+    public ConditionContainer conditions = new ConditionContainer();//condition that must be met for the effect to be applied, allow for more nuance with smaller authoring overhead, condition is marked unmet if it refers to an unbound role
+    public List<influenceRule> influenceRules = new List<influenceRule>();
 
     internal bool TryVirtualApply(WorldModel model,ref WorldModel targetModel, Dictionary<Role, Character> involvedCharacters)
     {
@@ -172,20 +173,42 @@ public enum ValueComparisonOperator//removing equals might be a good call as flo
     Equals
 }
 [Serializable]
-public class EffectInstance // this is going to turn into a container for the actual effects
+public class EffectInstance : ISerializationCallbackReceiver // this is going to turn into a container for the actual effects
 {
     public InfoType type;
-    public Effect effect;
+    [NonSerialized]public Effect effect;
     //control for who percieves the effect directly.
+    [HideInInspector]public string effectType;
+    [HideInInspector]public string JsonEffect;
     [Tooltip("have all involved character see if this effect is applied.")]
     public bool AllWitnesses;
     [Tooltip("Roles that see the outcome of this effect, others will use likelyhood to alter their worldmodel")]
     public List<Role> Witnesses;
+
+    public void OnAfterDeserialize()
+    {
+        if(JsonEffect == "" || effectType == null)
+        {
+            effect = new TraitEffect();
+        }
+        else
+        {
+            effect = (Effect)JsonUtility.FromJson(JsonEffect, Type.GetType(effectType));
+        }
+    }
+
+    public void OnBeforeSerialize()
+    {
+        effectType = effect.GetType().ToString();
+        JsonEffect = JsonUtility.ToJson(effect);
+    }
+
     internal void VirtualApply(ref WorldModel targetModel, Dictionary<Role, Character> involvedCharacters, float likelyhood)
     {
         effect.VirtualApply(ref targetModel, involvedCharacters, likelyhood);
     }
 }
+
 
 [Serializable]
 public abstract class Effect//all the inherited subclasses will have public fields, because of how the serializer works

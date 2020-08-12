@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
-using ICSharpCode.NRefactory.Ast;
-using System.Security.Principal;
+
 
 
 [CustomPropertyDrawer(typeof(ConditionContainer))]
@@ -188,10 +187,11 @@ public class ConditionContDrawer : PropertyDrawer
                 throw new NotImplementedException();
         }
     }
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)//next issue to solve
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         ConditionContainer cont = (ConditionContainer)EditorHelper.GetTargetObjectOfProperty(property);
         var height = Vstep;// label
+        if (cont == null) return height;
         foreach (var condition in cont.conditions)
         {
             height += Vstep;//individual labels

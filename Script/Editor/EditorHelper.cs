@@ -64,4 +64,10 @@ public class EditorHelper
         }
         return enm.Current;
     }
+    public static  Rect GetNextRectangle(Rect position, ref float offset, float Vstep)
+    {
+        var result = new Rect(position.x, position.y + offset, position.width, EditorGUIUtility.singleLineHeight);
+        offset += Vstep;
+        return result;
+    }
 }
