@@ -2,9 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using TMPro;
 using UnityEngine;
 
 //default reference for the serialized dictionary need to be setup in advance
@@ -207,10 +204,9 @@ public class Character : ScriptableObject
     {
         var model = new CharModel();
         model.Character = this;
-        //model.goals = m_goals;
+        model.goals = m_goals;
         model.Relationships = m_relationships;
         model.traits = m_traits;
-        //throw new NotImplementedException();//build opinion model
         if (worldModel.Characters.ContainsKey(this)) worldModel.Characters[this] = model;
         else worldModel.Characters.Add(this, model);
     }
