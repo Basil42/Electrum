@@ -296,7 +296,18 @@ public class RelationshipEffect : Effect
 
     internal override void Apply(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character HolderCharacter;
+        if (!involvedCharacters.TryGetValue(Holder, out HolderCharacter)) return;//unbound role
+        Character RecipientCharacter;
+        if (!involvedCharacters.TryGetValue(Recipient, out RecipientCharacter)) return;
+        RelationshipArray relationships;
+        if(!HolderCharacter.m_relationships.TryGetValue(RecipientCharacter,out relationships))
+        {
+            relationships = new RelationshipArray();
+            HolderCharacter.m_relationships.Add(RecipientCharacter, relationships);
+        }
+        if (status && !relationships.relationships.Contains(relationship)) relationships.relationships.Add(relationship);
+        else if (!status && relationships.relationships.Contains(relationship)) relationships.relationships.Remove(relationship);
     }
 
     internal override void VirtualApply(ref WorldModel targetModel, Dictionary<Role, Character> involvedCharacters, float likelyhood)
@@ -345,7 +356,37 @@ public class TraitOpinionEffect : OpinionEffect
 
     internal override void Apply(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character OpinionHolderCharacter;
+        if (!involvedCharacters.TryGetValue(OpinionHolder, out OpinionHolderCharacter)) return;
+        Character TraitHolderCharacter;
+        if (!involvedCharacters.TryGetValue(TraitHolder, out TraitHolderCharacter)) return;
+        CharModel TraitHolderModel;
+        if(!OpinionHolderCharacter.worldModel.Characters.TryGetValue(TraitHolderCharacter,out TraitHolderModel))
+        {
+            TraitHolderModel = new CharModel(TraitHolderCharacter);
+            OpinionHolderCharacter.worldModel.Characters.Add(TraitHolderCharacter, TraitHolderModel);
+        }
+        float previousValue;
+        if(!TraitHolderModel.traits.TryGetValue(trait,out previousValue))
+        {
+            previousValue = 0.5f;//assume average
+            TraitHolderModel.traits.Add(trait, previousValue);
+        }
+        switch (Operator)
+        {
+            case ValueChangeOperator.add:
+                TraitHolderModel.traits[trait] = Mathf.Clamp01(previousValue + traitValue);
+                break;
+            case ValueChangeOperator.multiply:
+                TraitHolderModel.traits[trait] = Mathf.Clamp01(previousValue * traitValue);
+                break;
+            case ValueChangeOperator.set:
+                TraitHolderModel.traits[trait] = Mathf.Clamp01(traitValue);
+                break;
+            default:
+                Debug.LogError("invalid Value change operator : " + Operator.ToString());
+                break;
+        }
     }
 
     internal override void VirtualApply(ref WorldModel targetModel, Dictionary<Role, Character> involvedCharacters, float likelyhood)
@@ -403,7 +444,26 @@ public class RelationshipOpinionEffect : OpinionEffect
 
     internal override void Apply(Dictionary<Role, Character> involvedCharacters)
     {
-        throw new NotImplementedException();
+        Character OpinionHolderCharacter;
+        if (!involvedCharacters.TryGetValue(OpinionHolder, out OpinionHolderCharacter)) return;
+        Character RelationshipHolderChar;
+        if (!involvedCharacters.TryGetValue(RelationshipHolder, out RelationshipHolderChar)) return;
+        Character RelationshipRecipientChar;
+        if (!involvedCharacters.TryGetValue(RelationshipRecipient,out RelationshipRecipientChar)) return;
+        CharModel RelationshipHolderModel;
+        if(!OpinionHolderCharacter.worldModel.Characters.TryGetValue(RelationshipHolderChar,out RelationshipHolderModel))
+        {
+            RelationshipHolderModel = new CharModel(RelationshipHolderChar);
+            OpinionHolderCharacter.worldModel.Characters.Add(RelationshipHolderChar, RelationshipHolderModel);
+        }
+        RelationshipArray relationshipArray;
+        if (!RelationshipHolderModel.Relationships.TryGetValue(RelationshipRecipientChar, out relationshipArray))
+        {
+            relationshipArray = new RelationshipArray();
+            RelationshipHolderModel.Relationships.Add(RelationshipRecipientChar, relationshipArray);
+        }
+        if (RelationshipStatus && !relationshipArray.relationships.Contains(relationship)) relationshipArray.relationships.Add(relationship);
+        else if (!RelationshipStatus && relationshipArray.relationships.Contains((relationship))) relationshipArray.relationships.Remove(relationship);
     }
 
     internal override void VirtualApply(ref WorldModel targetModel, Dictionary<Role, Character> involvedCharacters, float likelyhood)
