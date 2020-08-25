@@ -36,12 +36,12 @@ public class Goal
             else if (endDist < 0.0f)individualProgress.Add(startDist);//condition met at destination, we for now give the same value to meeting the condition, ignoring how valuable or not overshooting could be(it prevent more problem that it will cause, probably)
             else individualProgress.Add(startDist - endDist);//regular distance, negative value indicate the new worldstate is further away form meeting this condition.
         }
-        float total = 0.0f;
+        float squaredTotal = 0.0f;
         foreach(var value in individualProgress)
         {
-            total += value;
+            squaredTotal += value*value;
         }
-        return total;
+        return Mathf.Sqrt(squaredTotal);
     }
 }
 [Serializable]
